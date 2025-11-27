@@ -14,8 +14,9 @@ public class BookMarketClient {
 	public static void main(String[] args) {
 		
 		ArrayList<Book> books = new ArrayList<Book>();
-		
+
 		Bookmarket fleaMarket = new Bookmarket();
+        Bookmarket.init(100);
 		
 		fleaMarket.populate(10000, 10000, 10000, 1000, 10000);
 		for (int i = 0; i < 100; i++) {
