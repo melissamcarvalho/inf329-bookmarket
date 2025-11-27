@@ -195,12 +195,15 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+    Returns a random address.
      */
     private static Address getAnAddressAnyAddress(Random random) {
         return addressById.get(random.nextInt(addressById.size()));
     }
 
+    /**
+     Creates a new address.
+     */
     private static Address createAddress(String street1, String street2,
             String city, String state, String zip, Country country) {
         int id = addressById.size();
@@ -212,25 +215,29 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     
+     Returns a customer by their ID.
      */
     public static Customer getCustomer(int cId) {
         return customersById.get(cId);
     }
 
     /**
-     
+    Returns a customer by their username.
      */
     public static Optional<Customer> getCustomer(String username) {
         return Optional.ofNullable(customersByUsername.get(username));
     }
 
+    /**
+     Returns a random customer.
+     */
     private Customer getACustomerAnyCustomer(Random random) {
         return customersById.get(random.nextInt(customersById.size()));
     }
 
     /**
-     
+     Creates a new customer with method overloading.
+     Public preparation method
      */
     public static Customer createCustomer(String fname, String lname, String street1,
             String street2, String city, String state, String zip,
@@ -245,8 +252,9 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     
-     */
+    Creates a new customer.
+    Private method that is called by the public preparation method to define a new customer.
+    */
     private static Customer createCustomer(String fname, String lname, Address address,
             String phone, String email, Date since, Date lastVisit,
             Date login, Date expiration, double discount, Date birthdate,
@@ -262,7 +270,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+    Set new login time and new expiration time for an active customer.
      */
     public static void refreshCustomerSession(int cId, long now) {
         Customer customer = getCustomer(cId);
@@ -272,10 +280,16 @@ public class Bookstore implements Serializable {
         }
     }
 
+    /**
+    Returns a random author.
+    */
     private static Author getAnAuthorAnyAuthor(Random random) {
         return authorsById.get(random.nextInt(authorsById.size()));
     }
 
+    /**
+     Creates a new author.
+    */
     private static Author createAuthor(String fname, String mname, String lname,
             Date birthdate, String bio) {
         Author author = new Author(fname, mname, lname, birthdate, bio);
@@ -284,15 +298,14 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+    Gets a book by its ID.
      */
     public static Optional<Book> getBook(int bId) {
         return Optional.ofNullable(booksById.get(bId));
     }
 
     /**
-     *
-    
+     * Returns a list of recommended books based on items.
      */
     public static List<Book> getRecommendationByItens(int c_id) {
         // to do
@@ -300,8 +313,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     *
-    
+     * Returns a list of recommended books based on users.
      */
     public static List<Book> getRecommendationByUsers(int c_id) {
         // to do
@@ -309,15 +321,14 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     *
-     
+     * Returns a random book.
      */
     public static Book getABookAnyBook(Random random) {
         return booksById.get(random.nextInt(booksById.size()));
     }
 
     /**
-     
+     * Returns a list of books by subject.
      */
     public static List<Book> getBooksBySubject(SUBJECTS subject) {
         ArrayList<Book> books = new ArrayList<>();
@@ -334,7 +345,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     
+     * Returns a list of books by title.
      */
     public static List<Book> getBooksByTitle(String title) {
         Pattern regex = Pattern.compile("^" + title);
@@ -352,7 +363,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     
+     Returns a list of books by author.
      */
     public static List<Book> getBooksByAuthor(String author) {
         Pattern regex = Pattern.compile("^" + author);
@@ -370,7 +381,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+     * Returns a list of new books by subject.
      */
     public static List<Book> getNewBooks(SUBJECTS subject) {
         return getNewBooks0(subject);
