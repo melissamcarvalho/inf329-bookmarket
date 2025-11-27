@@ -124,7 +124,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+    Bookstore constructor.
      */
     public Bookstore(final int id) {
         this.id = id;
@@ -135,21 +135,22 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     
+     Returns the bookstore ID.
      */
     public int getId() {
         return id;
     }
 
     /**
-     
+     Returns whether the bookstore data has been populated.
      */
     public boolean isPopulated() {
         return populated;
     }
 
     /**
-     
+     Returns a country by its name
+     If it does not exist, creates a new country with empty currency and 0 exchange rate.
      */
     private static Country alwaysGetCountry(String name) {
         Country country = countryByName.get(name);
@@ -160,14 +161,14 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+    Returns a random country.
      */
     private static Country getACountryAnyCountry(Random random) {
         return countryById.get(random.nextInt(countryById.size()));
     }
 
     /**
-     
+     Creates a new country.
      */
     private static Country createCountry(String name, String currency, double exchange) {
         int id = countryById.size();
@@ -178,7 +179,8 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     
+     Returns an address by its components.
+     If it does not exist, creates a new address.
      */
     public static Address alwaysGetAddress(String street1, String street2,
             String city, String state, String zip, String countryName) {
