@@ -56,10 +56,7 @@ package dominio;
 import java.io.Serializable;
 
 /**
- * A data object that represents a country.
- * This class stores the country's name, currency, and exchange rate, and is used in {@link Address} objects.
- *
- * <img src="./doc-files/Country.png" alt="Country">
+ * *<img src="./doc-files/Country.png" alt="Country">
  * <br><a href="./doc-files/Country.html"> code </a>
  */
 public class Country implements Serializable {

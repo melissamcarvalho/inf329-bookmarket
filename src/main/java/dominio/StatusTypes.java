@@ -1,25 +1,14 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package dominio;
 
 /**
- * Enumeration of the possible statuses for an {@link Order}.
  *
  * @author User
  */
 public enum StatusTypes {
-    /**
-     * The order is being processed.
-     */
-    PROCESSING,
-    /**
-     * The order has been shipped.
-     */
-    SHIPPED,
-    /**
-     * The order is pending payment or processing.
-     */
-    PENDING,
-    /**
-     * The order has been denied or canceled.
-     */
-    DENIED
+    PROCESSING, SHIPPED, PENDING, DENIED
 }

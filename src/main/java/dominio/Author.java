@@ -57,10 +57,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * A data object that represents a book author.
- * This class stores biographical information about an author, including their name and a short biography.
- *
- * <img src="./doc-files/Author.png" alt="Author">
+ * *<img src="./doc-files/Author.png" alt="Author">
  * <br><a href="./doc-files/Author.html"> code </a>
  */
 public class Author implements Serializable {

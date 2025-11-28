@@ -56,10 +56,7 @@ package dominio;
 import java.io.Serializable;
 
 /**
- * A data object that represents a physical address.
- * This class stores all components of a mailing address, including street, city, state, postal code, and country.
- *
- * <img src="./doc-files/Address.png" alt="Address">
+ * *<img src="./doc-files/Address.png" alt="Address">
  * <br><a href="./doc-files/Address.html"> code </a>
  */
 public class Address implements Serializable {

@@ -57,10 +57,7 @@ package dominio;
 import java.io.Serializable;
 
 /**
- * A data object that represents a single line item within an {@link Order}.
- * It captures the details of a purchased book, including the quantity, the discount applied, and any comments.
- *
- * <img src="./doc-files/OrderLine.png" alt="OrderLine">
+ * *<img src="./doc-files/OrderLine.png" alt="OrderLine">
  * <br><a href="./doc-files/OrderLine.html"> code </a>
  */
 public class OrderLine implements Serializable {

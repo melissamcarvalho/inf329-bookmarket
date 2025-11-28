@@ -58,11 +58,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * A data object that represents a book in the store's catalog.
- * This class contains all details about a book, including its title, author, publication information,
- * pricing, and relationships to other books.
- *
- * <img src="./doc-files/Book.png" alt="Book">
+ * *<img src="./doc-files/Book.png" alt="Book">
  * <br><a href="./doc-files/Book.html"> code </a>
  */
 public class Book implements Serializable {

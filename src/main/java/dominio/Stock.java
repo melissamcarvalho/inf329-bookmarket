@@ -1,9 +1,6 @@
 package dominio;
 
 /**
- * A data object representing the stock information for a specific {@link Book} at a particular bookstore instance.
- * It links a book to its inventory details, such as cost and quantity available at that location.
- *
  * <img src="./doc-files/Stock.png" alt="Bookmarket">
  * <br><a href="./doc-files/Stock.html"> code </a>
  *

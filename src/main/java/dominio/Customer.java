@@ -58,11 +58,7 @@ import java.util.Date;
 import java.util.Objects;
 
 /**
- * A data object that represents a customer of the bookstore.
- * This class stores all information related to a customer, including personal details, login credentials,
- * address, and a reference to their most recent order.
- *
- * <img src="./doc-files/Customer.png" alt="Customer">
+ * *<img src="./doc-files/Customer.png" alt="Customer">
  * <br><a href="./doc-files/Customer.html"> code </a>
  */
 public class Customer implements Serializable {

@@ -1,34 +1,15 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package dominio;
 
 /**
- * Enumeration of the available shipping methods for an {@link Order}.
  *
  * @author User
  */
  public enum ShipTypes {
-    /**
-     * Shipping by air freight.
-     */
-    AIR,
-    /**
-     * Shipping via United Parcel Service (UPS).
-     */
-    UPS,
-    /**
-     * Shipping via FedEx.
-     */
-    FEDEX,
-    /**
-     * Standard ground shipping.
-     */
-    SHIP,
-    /**
-     * Local courier delivery.
-     */
-    COURIER,
-    /**
-     * Shipping via postal mail.
-     */
-    MAIL
+    AIR, UPS, FEDEX, SHIP, COURIER, MAIL
     
 }
