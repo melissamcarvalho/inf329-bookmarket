@@ -57,7 +57,13 @@ package dominio;
 import java.io.Serializable;
 
 /**
- * *<img src="./doc-files/OrderLine.png" alt="OrderLine">
+ * Represents a single item in an order within the Bookmarket system.
+ * <p>
+ * The OrderLine class encapsulates the details of a purchased book, including the book itself,
+ * quantity, discount applied, and any comments. It is used as part of the Order entity to model
+ * the composition of a customer's purchase.
+ * </p>
+ * <img src="./doc-files/OrderLine.png" alt="OrderLine">
  * <br><a href="./doc-files/OrderLine.html"> code </a>
  */
 public class OrderLine implements Serializable {
@@ -70,11 +76,12 @@ public class OrderLine implements Serializable {
     private final String comments;
 
     /**
+     * Constructs an OrderLine with the specified book, quantity, discount, and comments.
      *
-     * @param book
-     * @param qty
-     * @param discount
-     * @param comments
+     * @param book The book being purchased.
+     * @param qty The quantity of the book.
+     * @param discount The discount applied to this item.
+     * @param comments Any comments related to this order line.
      */
     public OrderLine(Book book, int qty, double discount, String comments) {
         this.book = book;
@@ -84,32 +91,32 @@ public class OrderLine implements Serializable {
     }
 
     /**
-     *
-     * @return
+     * Gets the book associated with this order line.
+     * @return The book.
      */
     public Book getBook() {
         return book;
     }
 
     /**
-     *
-     * @return
+     * Gets the quantity of the book ordered.
+     * @return The quantity.
      */
     public int getQty() {
         return qty;
     }
 
     /**
-     *
-     * @return
+     * Gets the discount applied to this order line.
+     * @return The discount value.
      */
     public double getDiscount() {
         return discount;
     }
 
     /**
-     *
-     * @return
+     * Gets any comments associated with this order line.
+     * @return The comments.
      */
     public String getComments() {
         return comments;
