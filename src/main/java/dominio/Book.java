@@ -61,6 +61,14 @@ import java.util.Date;
  * *<img src="./doc-files/Book.png" alt="Book">
  * <br><a href="./doc-files/Book.html"> code </a>
  */
+/**
+ * Represents a book in the Bookmarket system, encapsulating all data associated with a single book.
+ * <p>
+ * This class is a core domain entity and contains information such as title, author, subject,
+ * publication details, pricing, and related books. It is used throughout the system for book management,
+ * searching, and recommendation features.
+ * </p>
+ */
 public class Book implements Serializable {
 
     private static final long serialVersionUID = 6505830715531808617L;
@@ -88,22 +96,24 @@ public class Book implements Serializable {
     private final Author author;
 
     /**
+     * Constructs a new Book with all its attributes.
      *
-     * @param id
-     * @param title
-     * @param pubDate
-     * @param publisher
-     * @param subject
-     * @param desc
-     * @param thumbnail
-     * @param image
-     * @param srp
-     * @param avail
-     * @param isbn
-     * @param page
-     * @param backing
-     * @param dimensions
-     * @param author
+     * @param id Unique identifier for the book.
+     * @param title Title of the book.
+     * @param pubDate Publication date.
+     * @param publisher Publisher name.
+     * @param subject Subject category.
+     * @param desc Description of the book.
+     * @param thumbnail URL or path to the thumbnail image.
+     * @param image URL or path to the main image.
+     * @param srp Suggested retail price.
+     * @param avail Date when the book is available.
+     * @param isbn ISBN code.
+     * @param page Number of pages.
+     * @param backing Book binding type.
+     * @param dimensions Array with book dimensions.
+     * @param weight Weight of the book.
+     * @param author Author of the book.
      */
     public Book(int id, String title, Date pubDate, String publisher,
             SUBJECTS subject, String desc, String thumbnail,
@@ -134,24 +144,24 @@ public class Book implements Serializable {
     }
 
     /**
-     *
-     * @return
+     * Gets the title of the book.
+     * @return The book title.
      */
     public String getTitle() {
         return title;
     }
 
     /**
-     *
-     * @return
+     * Gets the thumbnail image path or URL.
+     * @return The thumbnail image.
      */
     public String getThumbnail() {
         return thumbnail;
     }
 
     /**
-     *
-     * @param thumbnail
+     * Sets the thumbnail image path or URL.
+     * @param thumbnail The thumbnail image.
      */
     public void setThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
@@ -159,32 +169,32 @@ public class Book implements Serializable {
 
 
     /**
-     *
-     * @return
+     * Gets the main image path or URL.
+     * @return The main image.
      */
     public String getImage() {
         return image;
     }
 
     /**
-     *
-     * @param image
+     * Sets the main image path or URL.
+     * @param image The main image.
      */
     public void setImage(String image) {
         this.image = image;
     }
 
     /**
-     *
-     * @return
+     * Gets the author of the book.
+     * @return The author.
      */
     public Author getAuthor() {
         return author;
     }
 
     /**
-     *
-     * @return
+     * Gets the suggested retail price.
+     * @return The price.
      */
     public double getSrp() {
         return srp;
@@ -192,80 +202,80 @@ public class Book implements Serializable {
 
 
     /**
-     *
-     * @return
+     * Gets the description of the book.
+     * @return The description.
      */
     public String getDesc() {
         return desc;
     }
 
     /**
-     *
-     * @return
+     * Gets the number of pages.
+     * @return The page count.
      */
     public int getPage() {
         return page;
     }
 
     /**
-     *
-     * @return
+     * Gets the book binding type.
+     * @return The backing type.
      */
     public BACKINGS getBacking() {
         return backing;
     }
 
     /**
-     *
-     * @return
+     * Gets the publication date.
+     * @return The publication date.
      */
     public Date getPubDate() {
         return pubDate;
     }
 
     /**
-     *
-     * @param pubDate
+     * Sets the publication date.
+     * @param pubDate The publication date.
      */
     public void setPubDate(Date pubDate) {
         this.pubDate = pubDate;
     }
 
     /**
-     *
-     * @return
+     * Gets the publisher name.
+     * @return The publisher.
      */
     public String getPublisher() {
         return publisher;
     }
 
     /**
-     *
-     * @return
+     * Gets the ISBN code.
+     * @return The ISBN.
      */
     public String getIsbn() {
         return isbn;
     }
 
     /**
-     *
-     * @return
+     * Gets the unique identifier of the book.
+     * @return The book ID.
      */
     public int getId() {
         return id;
     }
 
     /**
-     *
-     * @return
+     * Gets the dimensions of the book.
+     * @return The dimensions array.
      */
     public int[] getDimensions() {
         return dimensions;
     }
 
     /**
-     * 
-     * @return 
+     * Gets the weight of the book.
+     * @return The weight.
      */
     public double getWeight() {
         return weight;
@@ -274,105 +284,105 @@ public class Book implements Serializable {
     
 
     /**
-     *
-     * @return
+     * Gets the subject category of the book.
+     * @return The subject.
      */
     public SUBJECTS getSubject() {
         return subject;
     }
 
     /**
-     *
-     * @return
+     * Gets the date when the book is available.
+     * @return The availability date.
      */
     public Date getAvail() {
         return avail;
     }
 
     /**
-     *
-     * @return
+     * Gets the first related book.
+     * @return The related book.
      */
     public Book getRelated1() {
         return related1;
     }
 
     /**
-     *
-     * @return
+     * Gets the second related book.
+     * @return The related book.
      */
     public Book getRelated2() {
         return related2;
     }
 
     /**
-     *
-     * @return
+     * Gets the third related book.
+     * @return The related book.
      */
     public Book getRelated3() {
         return related3;
     }
 
     /**
-     *
-     * @return
+     * Gets the fourth related book.
+     * @return The related book.
      */
     public Book getRelated4() {
         return related4;
     }
 
     /**
-     *
-     * @return
+     * Gets the fifth related book.
+     * @return The related book.
      */
     public Book getRelated5() {
         return related5;
     }
 
     /**
-     *
-     * @param related1
+     * Sets the first related book.
+     * @param related1 The related book.
      */
     public void setRelated1(Book related1) {
         this.related1 = related1;
     }
 
     /**
-     *
-     * @param related2
+     * Sets the second related book.
+     * @param related2 The related book.
      */
     public void setRelated2(Book related2) {
         this.related2 = related2;
     }
 
     /**
-     *
-     * @param related3
+     * Sets the third related book.
+     * @param related3 The related book.
      */
     public void setRelated3(Book related3) {
         this.related3 = related3;
     }
 
     /**
-     *
-     * @param related4
+     * Sets the fourth related book.
+     * @param related4 The related book.
      */
     public void setRelated4(Book related4) {
         this.related4 = related4;
     }
 
     /**
-     *
-     * @param related5
+     * Sets the fifth related book.
+     * @param related5 The related book.
      */
     public void setRelated5(Book related5) {
         this.related5 = related5;
     }
 
     /**
-     *
-     * @param o
-     * @return
+     * Checks if this book is equal to another object based on the book ID.
+     * @param o The object to compare.
+     * @return True if the object is a Book with the same ID, false otherwise.
      */
     @Override
     public boolean equals(Object o) {
@@ -384,14 +394,18 @@ public class Book implements Serializable {
     }
 
     /**
-     *
-     * @return
+     * Returns the hash code for this book, based on its ID.
+     * @return The hash code.
      */
     @Override
     public int hashCode() {
         return id;
     }
 
+    /**
+     * Returns a string representation of the book, showing its ID.
+     * @return String with book ID.
+     */
     @Override
     public String toString() {
         return "Book{" + "id=" + id + '}';

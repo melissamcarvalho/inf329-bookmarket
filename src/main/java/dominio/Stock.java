@@ -1,3 +1,22 @@
+/**
+ * The {@code Stock} class represents the inventory information for a specific book in a bookstore.
+ * <p>
+ * <b>Architecture Overview:</b><br>
+ * Stock objects are associated with books and track the quantity, cost, and availability of each book
+ * in a particular store. This class is used by both the {@link Bookstore} and {@link Bookmarket} classes
+ * to manage and query inventory data, support order processing, and enable price comparisons across stores.
+ * <ul>
+ *   <li>Encapsulates inventory details for a book.</li>
+ *   <li>Supports stock management, pricing, and availability queries.</li>
+ *   <li>Used in best-seller and recommendation features to aggregate inventory data.</li>
+ * </ul>
+ * <b>Key Responsibilities:</b>
+ * <ul>
+ *   <li>Track quantity and cost of books in stock.</li>
+ *   <li>Provide inventory data for order fulfillment and recommendations.</li>
+ * </ul>
+ * </p>
+ */
 package dominio;
 
 /**

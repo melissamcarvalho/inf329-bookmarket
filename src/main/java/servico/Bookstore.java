@@ -85,9 +85,30 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * The {@code Bookstore} class represents an individual bookstore within the Bookmarket system.
+ * <p>
+ * <b>Architecture Overview:</b><br>
+ * Bookstore encapsulates all data and operations related to a single store, including books, customers,
+ * orders, carts, authors, and inventory (stock). It is responsible for the core business logic and data management
+ * for its own partition of the market. Multiple Bookstore instances are managed by the {@link Bookmarket} class,
+ * which coordinates global operations across all stores.
+ * <ul>
+ *   <li>Stores and manages books, customers, authors, and orders.</li>
+ *   <li>Implements search, recommendation, and customer management logic.</li>
+ *   <li>Provides methods for querying and manipulating store-specific data.</li>
+ *   <li>Acts as the main domain model for the Bookmarket system, with most business rules implemented here.</li>
+ * </ul>
+ * <b>Key Responsibilities:</b>
+ * <ul>
+ *   <li>Book, author, and customer CRUD operations.</li>
+ *   <li>Order and cart management.</li>
+ *   <li>Recommendation and search features.</li>
+ *   <li>Acts as a data source for the service layer in {@link Bookmarket}.</li>
+ * </ul>
+ * <p>
  * <img src="./doc-files/Bookstore.png" alt="Bookstore">
  * <br><a href="./doc-files/Bookstore.html"> code </a>
- *
+ * </p>
  */
 public class Bookstore implements Serializable {
 
