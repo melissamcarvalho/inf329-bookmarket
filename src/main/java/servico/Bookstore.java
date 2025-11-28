@@ -85,6 +85,26 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * Represents the core of the bookstore application, managing all data and business logic.
+ * <p>
+ * This class is designed as an implementation of the TPC-W benchmark, simulating the operations of an online bookstore.
+ * It handles the persistence and retrieval of all domain objects, such as books, customers, and orders.
+ * </p>
+ * <h2>Architecture</h2>
+ * <p>
+ * The {@code Bookstore} employs a mixed data management strategy:
+ * <ul>
+ *     <li><b>Static Data:</b> Core informational entities like {@link Book}, {@link Author}, {@link Customer}, and {@link Address}
+ *     are stored in static collections. This means that this data is shared across all instances of the {@code Bookstore},
+ *     simulating a single, unified database for the entire market.</li>
+ *     <li><b>Instance-Specific Data:</b> Transactional and inventory-related data, such as {@link Stock}, {@link Cart}, and {@link Order},
+ *     are managed within individual {@code Bookstore} instances. This allows each "store" to have its own separate inventory
+ *     and order history.</li>
+ * </ul>
+ * This design allows the system to scale by running multiple {@code Bookstore} instances, each representing a separate storefront
+ * or warehouse, while still sharing a common catalog of books and customers.
+ * </p>
+ *
  * <img src="./doc-files/Bookstore.png" alt="Bookstore">
  * <br><a href="./doc-files/Bookstore.html"> code </a>
  *
@@ -124,7 +144,10 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Bookstore constructor.
+     * Constructs a new Bookstore instance with a unique identifier.
+     * Each Bookstore instance represents a separate storefront with its own inventory and order processing.
+     *
+     * @param id The unique identifier for this bookstore instance.
      */
     public Bookstore(final int id) {
         this.id = id;
@@ -135,22 +158,30 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     Returns the bookstore ID.
+     * Returns the unique identifier of this bookstore instance.
+     *
+     * @return The bookstore ID.
      */
     public int getId() {
         return id;
     }
 
     /**
-     Returns whether the bookstore data has been populated.
+     * Checks if the static database has been populated with initial data.
+     * The population is a one-time process for the entire application.
+     *
+     * @return {@code true} if the data has been populated, {@code false} otherwise.
      */
     public boolean isPopulated() {
         return populated;
     }
 
     /**
-     Returns a country by its name
-     If it does not exist, creates a new country with empty currency and 0 exchange rate.
+     * Retrieves a {@link Country} by its name. If the country does not exist, it is created.
+     * This ensures that a country entity is always available.
+     *
+     * @param name The name of the country to retrieve.
+     * @return The existing or newly created {@link Country} object.
      */
     private static Country alwaysGetCountry(String name) {
         Country country = countryByName.get(name);
@@ -161,14 +192,22 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Returns a random country.
+     * Selects and returns a random {@link Country} from the database.
+     *
+     * @param random The {@link Random} generator to use.
+     * @return A randomly selected {@link Country}.
      */
     private static Country getACountryAnyCountry(Random random) {
         return countryById.get(random.nextInt(countryById.size()));
     }
 
     /**
-     Creates a new country.
+     * Creates and persists a new {@link Country}.
+     *
+     * @param name     The name of the country.
+     * @param currency The currency used in the country.
+     * @param exchange The exchange rate against a reference currency.
+     * @return The newly created {@link Country} object.
      */
     private static Country createCountry(String name, String currency, double exchange) {
         int id = countryById.size();
@@ -179,8 +218,17 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     Returns an address by its components.
-     If it does not exist, creates a new address.
+     * Retrieves an {@link Address} based on its component fields.
+     * If an identical address does not already exist, a new one is created and persisted.
+     * This method ensures that duplicate addresses are not stored.
+     *
+     * @param street1     The first line of the street address.
+     * @param street2     The second line of the street address.
+     * @param city        The city.
+     * @param state       The state or province.
+     * @param zip         The postal code.
+     * @param countryName The name of the country.
+     * @return The existing or newly created {@link Address} object.
      */
     public static Address alwaysGetAddress(String street1, String street2,
             String city, String state, String zip, String countryName) {
@@ -195,14 +243,25 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Returns a random address.
+     * Selects and returns a random {@link Address} from the database.
+     *
+     * @param random The {@link Random} generator to use.
+     * @return A randomly selected {@link Address}.
      */
     private static Address getAnAddressAnyAddress(Random random) {
         return addressById.get(random.nextInt(addressById.size()));
     }
 
     /**
-     Creates a new address.
+     * Creates and persists a new {@link Address}.
+     *
+     * @param street1 The first line of the street address.
+     * @param street2 The second line of the street address.
+     * @param city    The city.
+     * @param state   The state or province.
+     * @param zip     The postal code.
+     * @param country The {@link Country} of the address.
+     * @return The newly created {@link Address} object.
      */
     private static Address createAddress(String street1, String street2,
             String city, String state, String zip, Country country) {
@@ -215,29 +274,54 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     Returns a customer by their ID.
+     * Retrieves a {@link Customer} by their unique ID.
+     *
+     * @param cId The ID of the customer to retrieve.
+     * @return The {@link Customer} object.
      */
     public static Customer getCustomer(int cId) {
         return customersById.get(cId);
     }
 
     /**
-    Returns a customer by their username.
+     * Retrieves a {@link Customer} by their unique username.
+     *
+     * @param username The username of the customer to retrieve.
+     * @return An {@link Optional} containing the customer if found, or an empty Optional otherwise.
      */
     public static Optional<Customer> getCustomer(String username) {
         return Optional.ofNullable(customersByUsername.get(username));
     }
 
     /**
-     Returns a random customer.
+     * Selects and returns a random {@link Customer} from the database.
+     *
+     * @param random The {@link Random} generator to use.
+     * @return A randomly selected {@link Customer}.
      */
     private Customer getACustomerAnyCustomer(Random random) {
         return customersById.get(random.nextInt(customersById.size()));
     }
 
     /**
-     Creates a new customer with method overloading.
-     Public preparation method
+     * Creates a new customer account. This is the public-facing creation method.
+     * It handles address lookup/creation and then calls the private creation method.
+     *
+     * @param fname       The customer's first name.
+     * @param lname       The customer's last name.
+     * @param street1     The first line of the customer's address.
+     * @param street2     The second line of the customer's address.
+     * @param city        The city of the customer's address.
+     * @param state       The state of the customer's address.
+     * @param zip         The postal code of the customer's address.
+     * @param countryName The country of the customer's address.
+     * @param phone       The customer's phone number.
+     * @param email       The customer's email address.
+     * @param discount    The customer's discount percentage.
+     * @param birthdate   The customer's date of birth.
+     * @param data        Additional string data for the customer profile.
+     * @param now         The timestamp of the creation.
+     * @return The newly created {@link Customer} object.
      */
     public static Customer createCustomer(String fname, String lname, String street1,
             String street2, String city, String state, String zip,
@@ -252,9 +336,23 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Creates a new customer.
-    Private method that is called by the public preparation method to define a new customer.
-    */
+     * The internal method for creating and persisting a new {@link Customer}.
+     * It generates a unique username and password for the new customer.
+     *
+     * @param fname      The customer's first name.
+     * @param lname      The customer's last name.
+     * @param address    The customer's {@link Address}.
+     * @param phone      The customer's phone number.
+     * @param email      The customer's email address.
+     * @param since      The date the customer account was created.
+     * @param lastVisit  The date of the customer's last visit.
+     * @param login      The timestamp of the current login.
+     * @param expiration The timestamp when the current session expires.
+     * @param discount   The customer's discount percentage.
+     * @param birthdate  The customer's date of birth.
+     * @param data       Additional string data for the customer profile.
+     * @return The newly created {@link Customer} object.
+     */
     private static Customer createCustomer(String fname, String lname, Address address,
             String phone, String email, Date since, Date lastVisit,
             Date login, Date expiration, double discount, Date birthdate,
@@ -270,7 +368,10 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Set new login time and new expiration time for an active customer.
+     * Updates a customer's session by refreshing their login and session expiration times.
+     *
+     * @param cId The ID of the customer whose session is to be refreshed.
+     * @param now The current timestamp to use for the new login and expiration dates.
      */
     public static void refreshCustomerSession(int cId, long now) {
         Customer customer = getCustomer(cId);
@@ -281,15 +382,25 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Returns a random author.
-    */
+     * Selects and returns a random {@link Author} from the database.
+     *
+     * @param random The {@link Random} generator to use.
+     * @return A randomly selected {@link Author}.
+     */
     private static Author getAnAuthorAnyAuthor(Random random) {
         return authorsById.get(random.nextInt(authorsById.size()));
     }
 
     /**
-     Creates a new author.
-    */
+     * Creates and persists a new {@link Author}.
+     *
+     * @param fname     The author's first name.
+     * @param mname     The author's middle name.
+     * @param lname     The author's last name.
+     * @param birthdate The author's date of birth.
+     * @param bio       A biography of the author.
+     * @return The newly created {@link Author} object.
+     */
     private static Author createAuthor(String fname, String mname, String lname,
             Date birthdate, String bio) {
         Author author = new Author(fname, mname, lname, birthdate, bio);
@@ -298,14 +409,21 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Gets a book by its ID.
+     * Retrieves a {@link Book} by its unique ID.
+     *
+     * @param bId The ID of the book to retrieve.
+     * @return An {@link Optional} containing the book if found, or an empty Optional otherwise.
      */
     public static Optional<Book> getBook(int bId) {
         return Optional.ofNullable(booksById.get(bId));
     }
 
     /**
-     * Returns a list of recommended books based on items.
+     * Returns a list of recommended books based on the purchase history of similar items.
+     * <p><b>Note:</b> This feature is not yet implemented.</p>
+     *
+     * @param c_id The customer ID for whom to generate recommendations.
+     * @return Currently returns {@code null}.
      */
     public static List<Book> getRecommendationByItens(int c_id) {
         // to do
@@ -313,7 +431,11 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     * Returns a list of recommended books based on users.
+     * Returns a list of recommended books based on the purchase history of similar users.
+     * <p><b>Note:</b> This feature is not yet implemented.</p>
+     *
+     * @param c_id The customer ID for whom to generate recommendations.
+     * @return Currently returns {@code null}.
      */
     public static List<Book> getRecommendationByUsers(int c_id) {
         // to do
@@ -321,14 +443,21 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     * Returns a random book.
+     * Selects and returns a random {@link Book} from the database.
+     *
+     * @param random The {@link Random} generator to use.
+     * @return A randomly selected {@link Book}.
      */
     public static Book getABookAnyBook(Random random) {
         return booksById.get(random.nextInt(booksById.size()));
     }
 
     /**
-     * Returns a list of books by subject.
+     * Searches for books matching a specific {@link SUBJECTS}.
+     * Returns up to 50 books, sorted alphabetically by title.
+     *
+     * @param subject The subject to search for.
+     * @return A {@link List} of matching {@link Book} objects.
      */
     public static List<Book> getBooksBySubject(SUBJECTS subject) {
         ArrayList<Book> books = new ArrayList<>();
@@ -345,7 +474,11 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     * Returns a list of books by title.
+     * Searches for books where the title starts with the given search key.
+     * Returns up to 50 books, sorted alphabetically by title.
+     *
+     * @param title The title search key.
+     * @return A {@link List} of matching {@link Book} objects.
      */
     public static List<Book> getBooksByTitle(String title) {
         Pattern regex = Pattern.compile("^" + title);
@@ -363,7 +496,11 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     Returns a list of books by author.
+     * Searches for books where the author's last name starts with the given search key.
+     * Returns up to 50 books, sorted alphabetically by title.
+     *
+     * @param author The author last name search key.
+     * @return A {@link List} of matching {@link Book} objects.
      */
     public static List<Book> getBooksByAuthor(String author) {
         Pattern regex = Pattern.compile("^" + author);
@@ -381,7 +518,11 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     * Returns a list of new books by subject.
+     * Retrieves the 50 most recently published books for a given subject.
+     * The results are sorted by publication date (newest first), then by title.
+     *
+     * @param subject The subject to search for.
+     * @return A {@link List} of the newest {@link Book} objects for the subject.
      */
     public static List<Book> getNewBooks(SUBJECTS subject) {
         return getNewBooks0(subject);
@@ -471,9 +612,11 @@ public class Bookstore implements Serializable {
     }
 
     /**
+     * Finds the best-selling books for a given subject.
+     * <p><b>Note:</b> This feature is not yet implemented.</p>
      *
-     * @param subject
-     * @return
+     * @param subject The subject to search for.
+     * @return Currently returns {@code null}.
      */
     public List<Book> getBestSellers(SUBJECTS subject) {
         // to do
@@ -481,8 +624,9 @@ public class Bookstore implements Serializable {
     }
 
     /**
+     * Retrieves all orders processed by this bookstore instance.
      *
-     * @return
+     * @return A {@link List} of {@link Order} objects.
      */
     public List<Order> getOrdersById() {
         return ordersById;
@@ -508,11 +652,12 @@ public class Bookstore implements Serializable {
     }
 
     /**
+     * Updates the information for a specific book.
      *
-     * @param bId
-     * @param image
-     * @param thumbnail
-     * @param now
+     * @param bId       The ID of the book to update.
+     * @param image     The new image URL for the book.
+     * @param thumbnail The new thumbnail URL for the book.
+     * @param now       The current timestamp for the update.
      */
     public static void updateBook(int bId, String image,
             String thumbnail, long now) {
@@ -524,9 +669,11 @@ public class Bookstore implements Serializable {
     }
 
     /**
+     * Updates the cost of a book in this bookstore's inventory.
+     * If the book is not in stock, it is added.
      *
-     * @param bId
-     * @param cost
+     * @param bId  The ID of the book to update.
+     * @param cost The new cost of the book.
      */
     public void updateStock(int bId, double cost) {
         Book book = getBook(bId).get();
@@ -538,9 +685,10 @@ public class Bookstore implements Serializable {
     }
 
     /**
+     * Retrieves the stock information for a book from this bookstore's inventory.
      *
-     * @param bId
-     * @return
+     * @param bId The ID of the book.
+     * @return The {@link Stock} object for the book, or {@code null} if not in stock.
      */
     public Stock getStock(int bId) {
         final Book book = getBook(bId).get();
@@ -606,18 +754,20 @@ public class Bookstore implements Serializable {
     }
 
     /**
+     * Retrieves a shopping cart by its ID.
      *
-     * @param id
-     * @return
+     * @param id The ID of the cart to retrieve.
+     * @return The {@link Cart} object.
      */
     public Cart getCart(int id) {
         return cartsById.get(id);
     }
 
     /**
+     * Creates a new, empty shopping cart in this bookstore.
      *
-     * @param now
-     * @return
+     * @param now The timestamp of the creation.
+     * @return The newly created {@link Cart} object.
      */
     public Cart createCart(long now) {
         int idCart = cartsById.size();
@@ -627,7 +777,15 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+     * Updates the contents of a shopping cart.
+     * This can involve adding a new item or changing the quantity of existing items.
+     *
+     * @param cId        The ID of the cart to update.
+     * @param bId        The ID of a book to add to the cart (or null).
+     * @param bIds       A list of book IDs already in the cart to update quantities for.
+     * @param quantities A list of new quantities corresponding to the bIds list.
+     * @param now        The timestamp of the update.
+     * @return The updated {@link Cart} object.
      */
     public Cart cartUpdate(int cId, Integer bId, List<Integer> bIds,
             List<Integer> quantities, long now) {
@@ -647,7 +805,21 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+     * Finalizes a purchase by converting a shopping cart into an order.
+     * This method processes the payment, updates stock levels, and creates an order record.
+     *
+     * @param customerId    The ID of the purchasing customer.
+     * @param cartId        The ID of the shopping cart to be processed.
+     * @param comment       A comment to attach to the order.
+     * @param ccType        The type of credit card used.
+     * @param ccNumber      The credit card number.
+     * @param ccName        The name on the credit card.
+     * @param ccExpiry      The credit card's expiration date.
+     * @param shipping      The desired shipping method.
+     * @param shippingDate  The estimated shipping date.
+     * @param addressId     The ID of the shipping address (or -1 to use the customer's default).
+     * @param now           The timestamp of the purchase.
+     * @return The newly created {@link Order} object.
      */
     public Order confirmBuy(int customerId, int cartId, String comment,
             CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
@@ -692,7 +864,16 @@ public class Bookstore implements Serializable {
     private static Random rand;
 
     /**
-    
+     * Populates the static database tables with a specified number of entities.
+     * This is part of the TPC-W benchmark setup and should only be run once.
+     *
+     * @param seed      The random seed for data generation.
+     * @param now       The current timestamp.
+     * @param items     The number of books to create.
+     * @param customers The number of customers to create.
+     * @param addresses The number of addresses to create.
+     * @param authors   The number of authors to create.
+     * @return {@code true} if population was successful, {@code false} if data was already populated.
      */
     public static boolean populate(long seed, long now, int items, int customers,
             int addresses, int authors) {
@@ -916,12 +1097,27 @@ public class Bookstore implements Serializable {
         System.out.println(" Done");
     }
 
+    /**
+     * Populates the instance-specific tables (orders and stock) for this bookstore.
+     * This method is called for each {@code Bookstore} instance.
+     *
+     * @param number The number of orders to generate for this instance.
+     * @param rand   The {@link Random} generator to use.
+     * @param now    The current timestamp.
+     */
     void populateInstanceBookstore(int number, Random rand, long now) {
         populateOrders(number, rand, now);
         populateStocks(number, rand, now);
 
     }
 
+    /**
+     * Populates the stock for this bookstore instance with a random selection of books.
+     *
+     * @param number The number of stock entries to create.
+     * @param rand   The {@link Random} generator to use.
+     * @param now    The current timestamp.
+     */
     private void populateStocks(int number, Random rand, long now) {
         System.out.print("Creating " + number + " stocks...");
         for (int i = 0; i < number; i++) {
@@ -942,7 +1138,13 @@ public class Bookstore implements Serializable {
     }
 
 
-
+    /**
+     * Populates this bookstore instance with a number of historical orders.
+     *
+     * @param number The number of orders to create.
+     * @param rand   The {@link Random} generator to use.
+     * @param now    The current timestamp.
+     */
     private void populateOrders(int number, Random rand, long now) {
 
         System.out.print("Creating " + number + " orders...");
@@ -992,6 +1194,12 @@ public class Bookstore implements Serializable {
         System.out.println(" Done");
     }
 
+    /**
+     * Populates customer evaluations (reviews/ratings).
+     * <p><b>Note:</b> This feature is not yet implemented.</p>
+     *
+     * @param rand The {@link Random} generator to use.
+     */
     private static void populateEvaluation(Random rand) {
         System.out.print("Creating evaluation...");
         // to do

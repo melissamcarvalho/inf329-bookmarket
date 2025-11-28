@@ -58,7 +58,10 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * *<img src="./doc-files/CCTransaction.png" alt="CCTransaction">
+ * A data object that holds the details of a single credit card transaction.
+ * This class is associated with an {@link Order} to represent the payment made.
+ *
+ * <img src="./doc-files/CCTransaction.png" alt="CCTransaction">
  * <br><a href="./doc-files/CCTransaction.html"> code </a>
  */
 public class CCTransaction implements Serializable {

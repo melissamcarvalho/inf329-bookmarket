@@ -59,7 +59,11 @@ import java.util.Date;
 import java.util.HashMap;
 
 /**
- * *<img src="./doc-files/Cart.png" alt="Cart">
+ * A data object that represents a customer's shopping cart.
+ * A cart contains a collection of {@link CartLine} items, each representing a book the customer intends to purchase.
+ * It also includes methods for calculating the total cost of the items.
+ *
+ * <img src="./doc-files/Cart.png" alt="Cart">
  * <br><a href="./doc-files/Cart.html"> code </a>
  */
 public class Cart implements Serializable {

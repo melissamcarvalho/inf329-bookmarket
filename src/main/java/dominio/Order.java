@@ -59,7 +59,11 @@ import java.util.Date;
 import servico.Bookstore;
 
 /**
- * *<img src="./doc-files/Order.png" alt="Order">
+ * A data object that represents a completed customer order.
+ * This class contains a snapshot of all information related to a purchase, including the customer,
+ * items purchased (as {@link OrderLine} objects), shipping and billing details, and payment transaction information.
+ *
+ * <img src="./doc-files/Order.png" alt="Order">
  * <br><a href="./doc-files/Order.html"> code </a>
  */
 public class Order implements Serializable {

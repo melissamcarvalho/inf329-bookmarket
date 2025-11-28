@@ -57,7 +57,10 @@ package dominio;
 import java.io.Serializable;
 
 /**
- * *<img src="./doc-files/CartLine.png" alt="CartLine">
+ * A data object that represents a single line item within a {@link Cart}.
+ * Each cart line contains a reference to a {@link Stock} item and the quantity being purchased.
+ *
+ * <img src="./doc-files/CartLine.png" alt="CartLine">
  * <br><a href="./doc-files/CartLine.html"> code </a>
  */
 public class CartLine implements Serializable {
