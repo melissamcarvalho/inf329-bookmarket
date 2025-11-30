@@ -501,19 +501,18 @@ public class Bookstore implements Serializable {
      */
     public List<Book> getBestSellers(SUBJECTS subject) {
         List<Book> subjectBooks = getBooksBySubject(subject);
-        List<Order> booksOrders = getOrdersByBooks(subjectBooks);
+        List<OrderLine> booksOrders = getOrderLinesByBooks(subjectBooks);
 
         Map<Book, Counter> bookCounters = new HashMap<Book, Counter>();
-        booksOrders.forEach(order -> order.getLines()
-            .forEach(line -> {
-                Book book = line.getBook();
-                if(bookCounters.containsKey(book)) {
-                    bookCounters.put(book, new Counter(book));
-                }
-                Counter bookCounter = bookCounters.get(book);
-                bookCounter.increment(line.getQty());
-            })
-        );
+        booksOrders.forEach(line -> {
+            Book book = line.getBook();
+            if(!bookCounters.containsKey(book)) {
+                bookCounters.put(book, new Counter(book));
+            }
+
+            Counter bookCounter = bookCounters.get(book);
+            bookCounter.increment(line.getQty());
+        });
 
         List<Counter> counters = bookCounters.values()
                 .stream()
@@ -543,16 +542,14 @@ public class Bookstore implements Serializable {
      * @param books the list of books to search for in orders
      * @return a list of orders that contain at least one book from the input list
      */
-    public List<Order> getOrdersByBooks(List<Book> books) {
-        List<Order> booksOrders = getOrdersById()
+    public List<OrderLine> getOrderLinesByBooks(List<Book> books) {
+        List<OrderLine> orderLines = getOrdersById()
             .stream()
-            .filter((order) -> order.getLines()
-                    .stream()
-                    .anyMatch(line -> books.contains(line.getBook()))
-            )
+            .flatMap(order -> order.getLines().stream())
+            .filter(line -> books.contains(line.getBook()))
             .collect(Collectors.toList());
 
-        return booksOrders;
+        return orderLines;
     }
 
     /**

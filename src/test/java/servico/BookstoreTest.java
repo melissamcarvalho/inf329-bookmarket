@@ -237,5 +237,14 @@ public class BookstoreTest {
         assertEquals(thumbnail, book.getThumbnail());
     }
 
+    @Test
+    public void testGetBestSellers() {
+        System.out.println("getBestSellers");
+        SUBJECTS subject = SUBJECTS.ARTS;
+        List<Book> result = instance.getBestSellers(subject);
+        assertEquals(result.size(), result.stream().filter(book -> book.getSubject().equals(subject)).count());
+
+    }
+
    
 }
