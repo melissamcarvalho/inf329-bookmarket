@@ -496,9 +496,23 @@ public class Bookstore implements Serializable {
      * @param subject
      * @return
      */
-    public List<Book> getBestSellers(SUBJECTS subject) {
-        // to do
-        return null;
+    public Map<Book, Integer> getBestSellers(SUBJECTS subject) {
+        Map<Book, Integer> bookSales = new HashMap<>();
+
+        // Iterate through all orders to find sales of books of the given subject
+        for (Order order : ordersByCreation) {
+            // A sale is considered valid if the order status is PROCESSING or SHIPPED
+            if (order.getStatus() == StatusTypes.PROCESSING || order.getStatus() == StatusTypes.SHIPPED) {
+                for (OrderLine line : order.getLines()) {
+                    Book book = line.getBook();
+                    // If the book subject matches, update the sales count
+                    if (book.getSubject().equals(subject)) {
+                        bookSales.put(book, bookSales.getOrDefault(book, 0) + line.getQty());
+                    }
+                }
+            }
+        }
+        return bookSales;
     }
 
     /**
@@ -672,7 +686,7 @@ public class Bookstore implements Serializable {
      */
     public Order confirmBuy(int customerId, int cartId, String comment,
             CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
-            ShipTypes shipping, Date shippingDate, int addressId, long now) {
+            ShipTypes shipping, Date shippingDate, int addressId, long now, StatusTypes status) {
         Customer customer = getCustomer(customerId);
         Cart cart = getCart(cartId);
         Address shippingAddress = customer.getAddress();
@@ -690,8 +704,19 @@ public class Bookstore implements Serializable {
                 ccExpiry, "", cart.total(customer),
                 new Date(now), shippingAddress.getCountry());
         return createOrder(customer, new Date(now), cart, comment, shipping,
-                shippingDate, StatusTypes.PENDING, customer.getAddress(),
+                shippingDate, status, customer.getAddress(),
                 shippingAddress, ccTransact);
+    }
+
+    /**
+    
+     */
+    public Order confirmBuy(int customerId, int cartId, String comment,
+            CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
+            ShipTypes shipping, Date shippingDate, int addressId, long now) {
+        return confirmBuy(customerId, cartId, comment, ccType, ccNumber, ccName,
+                ccExpiry, shipping, shippingDate, addressId, now,
+                StatusTypes.PENDING);
     }
 
     private Order createOrder(Customer customer, Date date, Cart cart,

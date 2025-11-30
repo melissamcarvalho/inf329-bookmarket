@@ -1,32 +1,37 @@
 package servico;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import dominio.Book;
 import dominio.Cart;
 import dominio.CreditCards;
 import dominio.Customer;
-import dominio.Order;
 import dominio.SUBJECTS;
 import dominio.ShipTypes;
+import dominio.StatusTypes;
 import dominio.Stock;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
  * @author INF329
  */
 public class BookmarketTest {
+
+    private Book topSellerBook;
+    private Book secondSellerBook;
 
     public BookmarketTest() {
     }
@@ -71,7 +76,7 @@ public class BookmarketTest {
              * adiciona livros aleatoriamente no carrinho
              */
             for (int j = 0; j < items; j++) {
-                //bookstore.updateStock(j, 1);
+                bookstore.updateStock(j, 1);
             }
 
             bookstores[i] = bookstore;
@@ -79,10 +84,53 @@ public class BookmarketTest {
 
         Bookmarket.init(0, bookstores);
         Bookmarket.populate(items, customers, addresses, authors, orders);
+
+        // Create a predictable sales scenario for best-seller testing
+        List<Book> artBooks = Bookmarket.doSubjectSearch(SUBJECTS.ARTS);
+        topSellerBook = artBooks.get(0);
+        secondSellerBook = artBooks.get(1);
+
+        Customer customer = Bookstore.getCustomer(1);
+        int cartId = Bookmarket.createEmptyCart(bookstores[0].getId());
+        Cart cart = Bookmarket.getCart(bookstores[0].getId(), cartId);
+        cart.increaseLine(bookstores[0].getStock(topSellerBook.getId()), 1000000);
+        cart.increaseLine(bookstores[0].getStock(secondSellerBook.getId()), 50);
+
+        Bookmarket.doBuyConfirm(bookstores[0].getId(), cartId, customer.getId(), CreditCards.AMEX, 123456789012345L, "Test User", new Date(), ShipTypes.AIR, StatusTypes.SHIPPED);
     }
 
     @After
     public void tearDown() {
+    }
+
+    /**
+     * Test of getBestSellers method, of class Bookmarket.
+     */
+    @Test
+    public void testGetBestSellers() {
+        System.out.println("getBestSellers");
+        SUBJECTS subject = SUBJECTS.ARTS;
+        Map<Book, Set<Stock>> result = Bookmarket.getBestSellers(subject);
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertTrue(result.size() <= 50);
+
+        // Check the first book is the one we sold the most
+        Book firstBook = result.keySet().iterator().next();
+        assertEquals(topSellerBook, firstBook);
+
+        // Check the stocks for the first book
+        Set<Stock> stocks = result.get(firstBook);
+        assertNotNull(stocks);
+        assertFalse(stocks.isEmpty());
+
+        // Verify that stocks are sorted by cost
+        double lastCost = -1;
+        for (Stock stock : stocks) {
+            assertTrue(stock.getCost() >= lastCost);
+            lastCost = stock.getCost();
+        }
     }
 
     /**
@@ -95,7 +143,7 @@ public class BookmarketTest {
     }
 
     /**
-     * Test of getPriceBookRecommendationByUsers method, of class Bookmarket.
+     * Test of getStocksRecommendationByUsers method, of class Bookmarket.
      */
     @Test
     public void testGetStocksRecommendationByUsers() {

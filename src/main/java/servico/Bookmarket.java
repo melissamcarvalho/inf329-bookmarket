@@ -3,11 +3,15 @@ package servico;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,30 +23,43 @@ import dominio.Customer;
 import dominio.Order;
 import dominio.SUBJECTS;
 import dominio.ShipTypes;
+import dominio.StatusTypes;
 import dominio.Stock;
 import util.TPCW_Util;
 
 /**
- * The {@code Bookmarket} class serves as the main service layer and entry point for the Bookmarket system.
+ * The {@code Bookmarket} class serves as the main service layer and entry point
+ * for the Bookmarket system.
  * <p>
  * <b>Architecture Overview:</b><br>
- * Bookmarket acts as a facade, exposing high-level operations for managing books, customers, orders, carts,
- * and recommendations. It coordinates the underlying business logic and data, which are distributed across
- * multiple {@link Bookstore} instances (representing different stores or partitions of the market).
+ * Bookmarket acts as a facade, exposing high-level operations for managing
+ * books, customers, orders, carts, and recommendations. It coordinates the
+ * underlying business logic and data, which are distributed across multiple
+ * {@link Bookstore} instances (representing different stores or partitions of
+ * the market).
  * <ul>
- *   <li>Manages the global state of the system via a {@code StateMachine} that holds all {@code Bookstore} objects.</li>
- *   <li>Provides static methods for searching, retrieving, and manipulating books, customers, and orders.</li>
- *   <li>Delegates most domain-specific logic to the {@code Bookstore} class, acting as a central access point.</li>
- *   <li>Supports recommendations, best-seller queries, and price aggregation across all bookstores.</li>
- *   <li>Handles system initialization and data population for testing or demonstration purposes.</li>
+ * <li>Manages the global state of the system via a {@code StateMachine} that
+ * holds all {@code Bookstore} objects.</li>
+ * <li>Provides static methods for searching, retrieving, and manipulating
+ * books, customers, and orders.</li>
+ * <li>Delegates most domain-specific logic to the {@code Bookstore} class,
+ * acting as a central access point.</li>
+ * <li>Supports recommendations, best-seller queries, and price aggregation
+ * across all bookstores.</li>
+ * <li>Handles system initialization and data population for testing or
+ * demonstration purposes.</li>
  * </ul>
  * <b>Key Responsibilities:</b>
  * <ul>
- *   <li>System initialization and seeding with {@link #init(int, Bookstore...)} and {@link #populate(int, int, int, int, int)}.</li>
- *   <li>Customer management: creation, session refresh, and retrieval.</li>
- *   <li>Book management: search by subject, title, author, and retrieval of new products.</li>
- *   <li>Order and cart management, including recommendations and best-seller listings.</li>
- *   <li>Acts as a bridge between the client layer and the domain logic in {@code Bookstore}.</li>
+ * <li>System initialization and seeding with {@link #init(int, Bookstore...)}
+ * and {@link #populate(int, int, int, int, int)}.</li>
+ * <li>Customer management: creation, session refresh, and retrieval.</li>
+ * <li>Book management: search by subject, title, author, and retrieval of new
+ * products.</li>
+ * <li>Order and cart management, including recommendations and best-seller
+ * listings.</li>
+ * <li>Acts as a bridge between the client layer and the domain logic in
+ * {@code Bookstore}.</li>
  * </ul>
  * <p>
  * <img src="./doc-files/Bookstore.png" alt="Bookmarket">
@@ -71,7 +88,7 @@ public class Bookmarket {
         void checkpoint() {
 
         }
-        
+
         List<Bookstore> getState() {
             return state;
         }
@@ -97,8 +114,6 @@ public class Bookmarket {
     static StateMachine getStateMachine() {
         return stateMachine;
     }
-    
-    
 
     /**
      *
@@ -295,8 +310,35 @@ public class Bookmarket {
      * @return
      */
     public static Map<Book, Set<Stock>> getBestSellers(SUBJECTS subject) {
-        // to do
-        return null;
+        Map<Book, Integer> aggregateSales = new HashMap<>();
+
+        // Aggregate sales data from all bookstores
+        getBookstoreStream().forEach(bookstore -> {
+            Map<Book, Integer> sales = ((Bookstore) bookstore).getBestSellers(subject);
+            sales.forEach((book, count) -> aggregateSales.merge(book, count, Integer::sum));
+        });
+
+        // Sort books by aggregated sales in descending order
+        List<Book> topBooks = new ArrayList<>(aggregateSales.keySet());
+        topBooks.sort((b1, b2) -> aggregateSales.get(b2).compareTo(aggregateSales.get(b1)));
+
+        // Limit to the top 50
+        List<Book> bestSellers = topBooks.subList(0, Math.min(50, topBooks.size()));
+
+        // For each top book, get all its stocks sorted by cost
+        Map<Book, Set<Stock>> result = new LinkedHashMap<>();
+        for (Book book : bestSellers) {
+            Set<Stock> stocks = new TreeSet<>(Comparator.comparing(Stock::getCost));
+            getBookstoreStream().forEach(bookstore -> {
+                Stock stock = ((Bookstore) bookstore).getStock(book.getId());
+                if (stock != null) {
+                    stocks.add(stock);
+                }
+            });
+            result.put(book, stocks);
+        }
+
+        return result;
     }
 
     /**
@@ -474,13 +516,68 @@ public class Bookmarket {
      */
     public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
             CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
-            ShipTypes shipping) {
+            ShipTypes shipping, StatusTypes status) {
         long now = System.currentTimeMillis();
         try {
             return (Order) stateMachine.execute(new ConfirmBuyAction(storeId,
                     customer_id, shopping_id, randomComment(),
                     cc_type, cc_number, cc_name, cc_expiry, shipping,
-                    randomShippingDate(now), -1, now));
+                    randomShippingDate(now), -1, now, status));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     *
+     * @param storeId
+     * @param shopping_id
+     * @param customer_id
+     * @param cc_type
+     * @param cc_number
+     * @param cc_name
+     * @param cc_expiry
+     * @param shipping
+     * @return
+     */
+    public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
+            CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
+            ShipTypes shipping) {
+        return doBuyConfirm(storeId, shopping_id, customer_id, cc_type,
+                cc_number, cc_name, cc_expiry, shipping, StatusTypes.PENDING);
+    }
+
+    /**
+     *
+     * @param storeId
+     * @param shopping_id
+     * @param customer_id
+     * @param cc_type
+     * @param cc_number
+     * @param cc_name
+     * @param cc_expiry
+     * @param shipping
+     * @param street_1
+     * @param street_2
+     * @param city
+     * @param state
+     * @param zip
+     * @param country
+     * @param status
+     * @return
+     */
+    public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
+            CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
+            ShipTypes shipping, String street_1, String street_2, String city,
+            String state, String zip, String country, StatusTypes status) {
+        Address address = Bookstore.alwaysGetAddress(street_1, street_2,
+                city, state, zip, country);
+        long now = System.currentTimeMillis();
+        try {
+            return (Order) stateMachine.execute(new ConfirmBuyAction(storeId,
+                    customer_id, shopping_id, randomComment(),
+                    cc_type, cc_number, cc_name, cc_expiry, shipping,
+                    randomShippingDate(now), address.getId(), now, status));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -508,17 +605,9 @@ public class Bookmarket {
             CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
             ShipTypes shipping, String street_1, String street_2, String city,
             String state, String zip, String country) {
-        Address address = Bookstore.alwaysGetAddress(street_1, street_2,
-                city, state, zip, country);
-        long now = System.currentTimeMillis();
-        try {
-            return (Order) stateMachine.execute(new ConfirmBuyAction(storeId,
-                    customer_id, shopping_id, randomComment(),
-                    cc_type, cc_number, cc_name, cc_expiry, shipping,
-                    randomShippingDate(now), address.getId(), now));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return doBuyConfirm(storeId, shopping_id, customer_id, cc_type,
+                cc_number, cc_name, cc_expiry, shipping, street_1, street_2,
+                city, state, zip, country, StatusTypes.PENDING);
     }
 
     private static String randomComment() {
@@ -820,6 +909,7 @@ public class Bookmarket {
         Date shippingDate;
         int addressId;
         long now;
+        StatusTypes status;
 
         /**
          *
@@ -835,11 +925,12 @@ public class Bookmarket {
          * @param shippingDate
          * @param addressId
          * @param now
+         * @param status
          */
         public ConfirmBuyAction(int storeId, int customerId, int cartId,
                 String comment, CreditCards ccType, long ccNumber,
                 String ccName, Date ccExpiry, ShipTypes shipping,
-                Date shippingDate, int addressId, long now) {
+                Date shippingDate, int addressId, long now, StatusTypes status) {
             this.storeId = storeId;
             this.customerId = customerId;
             this.cartId = cartId;
@@ -852,6 +943,7 @@ public class Bookmarket {
             this.shippingDate = shippingDate;
             this.addressId = addressId;
             this.now = now;
+            this.status = status;
         }
 
         /**
@@ -863,7 +955,7 @@ public class Bookmarket {
         public Object executeOnBookstore(Stream<Bookstore> bookstore) {
             return bookstore.filter(bs -> bs.getId() == this.storeId).findFirst().get().confirmBuy(customerId, cartId, comment, ccType,
                     ccNumber, ccName, ccExpiry, shipping, shippingDate,
-                    addressId, now);
+                    addressId, now, status);
         }
     }
 
