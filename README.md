@@ -1,230 +1,114 @@
 # BookMarketCore
 
-## Diagrama de Classes
+## Coders manifest
+- Code development and comments use English language
+- Commit messages should use the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard
+- Commits should be done to feature branches `ft/` and only then, through a PR are merged to the `master` branch
+- Configure and execute linters on IDE before commiting changes
+- PRs are reviewed by an opposite squad
+
+## Class Diagram
+This class diagram represents the overall changes made by consequence of the implementation of the Recommender system.
+This diagram's purpose is not to be 100% complete, but to map only the required interfaces to be changed.
 
 ```mermaid
 classDiagram
-    %% --- PACOTE CLIENT ---
-    namespace client {
-        class BookMarketClient {
-            +main(String[])
-        }
-    }
-
-    %% --- PACOTE UTIL ---
     namespace util {
-        class TPCW_Util {
-            +getRandomString(Random, int, int) String
-            +getRandomInt(Random, int, int) int
-            +getRandomDate(Random) Date
-            +DigSyl(int, int) String
-        }
+        class TPCW_Util
     }
 
-    %% --- PACOTE DOMINIO (ENTIDADES) ---
-    namespace dominio {
-        class BACKINGS { <<enumeration>> HARDBACK, PAPERBACK, USED, AUDIO, LIMITED_EDITION }
-        class CreditCards { <<enumeration>> VISA, MASTERCARD, DISCOVER, AMEX, DINERS }
-        class ShipTypes { <<enumeration>> AIR, UPS, FEDEX, SHIP, COURIER, MAIL }
-        class StatusTypes { <<enumeration>> PROCESSING, SHIPPED, PENDING, DENIED }
-        class SUBJECTS { <<enumeration>> ARTS, BIOGRAPHIES, BUSINESS, CHILDREN, ... }
-
-        class Address {
-            -int id
-            -String street1
-            -String city
-            -String zip
-            -Country country
-            +getCountry() Country
-        }
-
-        class Author {
-            -String fname
-            -String lname
-            -Date birthdate
-            -String bio
-        }
-
+    namespace domain {
         class Book {
             -int id
-            -String title
-            -Author author
-            -SUBJECTS subject
-            -double srp
-            -Stock stock
-            +getRelated1() Book
-            +getThumbnail() String
+            ...
         }
-
-        class Cart {
-            -int id
-            -HashMap~Integer, CartLine~ linesByBookId
-            +subTotal(double) double
-            +total(Customer) double
-            +increaseLine(Stock, int)
-        }
-
-        class CartLine {
-            -int qty
-            -Stock stock
-            +getBook() Book
-        }
-
-        class Country {
-            -int id
-            -String name
-            -String currency
-            -double exchange
-        }
-
-        class CCTransaction {
-            -CreditCards type
-            -long num
-            -double amount
-            -Country country
-        }
-
+        
         class Customer {
             -int id
-            -String uname
-            -Address address
-            -Order mostRecentOrder
-            +logOrder(Order)
-            +getDiscount() double
+            ...
         }
-
-        class Order {
+        
+        class Evaluation {
             -int id
-            -Customer customer
-            -Address shippingAddress
-            -Address billingAddress
-            -CCTransaction cc
-            -ArrayList~OrderLine~ lines
-            -ShipTypes shipType
-            -StatusTypes status
-        }
-
-        class OrderLine {
+            -Costumer costumer
             -Book book
-            -int qty
-            -double discount
-            -String comments
+            -double rating
+            +Evaluation(Costumer, Book, double)
+            +setRating(double) void
+            +getRating() double
+            +getCostumer() Costumer
+            +getBook() Book
         }
-
-        class Stock {
-            -int idBookstore
-            -Book book
-            -int qty
-            -double cost
-            -Address address
-            +addQty(int)
-        }
-
-        class PixTransaction { <<Stub>> }
-        class Evaluation { <<Stub>> }
     }
 
-    %% --- PACOTE SERVICO ---
-    namespace servico {
+    namespace service {
         class Bookstore {
-            -int id
-            -List~Cart~ cartsById
-            -List~Order~ ordersById
-            -Map~Book, Stock~ stockByBook
-            -static List~Book~ booksById
-            -static List~Customer~ customersById
-            +populate(long, long, int, int, int, int) boolean
-            +getBooksBySubject(SUBJECTS) List~Book~
-            +createOrder(...) Order
-            +confirmBuy(...) Order
-            +updateStock(int, double)
+            -List~Evaluation~ evaluationById
+            ...
+            +createEvaluation(int costumerId, int bookId, double rating) void
+            +updateEvaluation(int id, double rating) void
+            +populateEvaluation(Random random) void
+            +getRecommendationByItens(int costumerId) List~Book~
+            +getRecommendationByUsers(int costumerId) List~Book~
+            +getBestSellers(SUBJECT subject) List~Book~
         }
 
         class Bookmarket {
-            -static StateMachine stateMachine
-            +init(int, Bookstore...)
-            +doSubjectSearch(SUBJECTS) List~Book~
-            +doBuyConfirm(...) Order
-            +getNewProducts(SUBJECTS) List~Book~
+            ...
+            +populate(long, long, int, int, int, int, int) boolean
+            +getRecommendationByItens(int costumerId) List~Book~
+            +getRecommendationByUsers(int costumerId) List~Book~
+            +getPriceBookRecommendationByUsers(int costumerId) Map~Book, Double~
+            +getBestSellers(SUBJECT subject) Map~Book, Set~Stock~~
         }
-
+    
         class StateMachine {
             -List~Bookstore~ state
             +execute(Action) Object
         }
 
-        class Action~STATE~ {
+        class Action~Object~ {
             <<interface>>
-            +executeOn(STATE) Object
+            ...
+            +executeOn(Object) Object
         }
         
         class BookstoreAction {
             <<abstract>>
+            ...
             +executeOnBookstore(Stream~Bookstore~) Object
         }
         
-        %% Command Pattern Classes (Inner classes of Bookmarket)
-        class CreateCustomerAction
-        class UpdateBookAction
-        class CreateCartAction
-        class CartUpdateAction
-        class ConfirmBuyAction
-        class PopulateAction
+        class CreateEvaluationAction {
+            ...
+            CreateEvaluationAction(int costumerId, int bookId, double rating)
+            +executeOnBookstore(Stream~Bookstore~) Object
+        }
+        
+        class UpdateEvaluationAction {
+            ...
+            UpdateEvaluationAction(int id, double rating)
+            +executeOnBookstore(Stream~Bookstore~) Object
+        }
     }
 
-    %% --- RELACIONAMENTOS GERAIS ---
-
-    %% Dependencias do Cliente
-    BookMarketClient ..> Bookmarket : uses
-    BookMarketClient ..> Book : uses
-
     %% Relacionamentos do Dominio
-    Book --> Author : written by
-    Book --> SUBJECTS : categorized as
-    Book --> BACKINGS : format
-    Book --> Book : related books
-
-    Cart *-- CartLine : contains
-    CartLine --> Stock : references
-
-    Order *-- OrderLine : contains
-    Order --> Customer : ordered by
-    Order --> Address : shipping/billing
-    Order --> CCTransaction : payment
-    Order --> StatusTypes : status
-
-    OrderLine --> Book : item
-
-    Customer --> Address : lives at
-    Customer --> Order : tracks recent
-
-    Address --> Country : located in
-    CCTransaction --> Country : location
-    CCTransaction --> CreditCards : type
-
-    Stock --> Book : stocks
-    Stock --> Address : warehouse location
+    Evaluation --> Book
+    Evaluation --> Customer
 
     %% Relacionamentos de Serviço
-    Bookmarket --> StateMachine : manages
-    StateMachine --> Bookstore : holds state of
+    Bookmarket --> StateMachine
+    StateMachine --> Bookstore
 
-    Bookstore *-- Book : manages collection
-    Bookstore *-- Customer : manages collection
-    Bookstore *-- Order : manages collection
-    Bookstore *-- Stock : manages inventory
+    Bookstore *-- Evaluation
 
-    Bookstore ..> TPCW_Util : uses for generation
+    Bookstore ..> TPCW_Util
 
     %% Command Pattern Hierarchy
-    BookstoreAction ..|> Action : implements
-    CreateCustomerAction --|> BookstoreAction : extends
-    UpdateBookAction --|> BookstoreAction : extends
-    CreateCartAction --|> BookstoreAction : extends
-    CartUpdateAction --|> BookstoreAction : extends
-    ConfirmBuyAction --|> BookstoreAction : extends
-    PopulateAction --|> BookstoreAction : extends
+    BookstoreAction ..|> Action
+    CreateEvaluationAction --|> BookstoreAction
+    UpdateEvaluationAction --|> BookstoreAction
     
-    Bookmarket ..> BookstoreAction : executes
+    Bookmarket ..> BookstoreAction
 ```
 
