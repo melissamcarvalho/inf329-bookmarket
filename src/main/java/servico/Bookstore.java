@@ -477,6 +477,17 @@ public class Bookstore implements Serializable {
          *
          */
         public int count;
+
+        public Counter() {}
+
+        public Counter(Book book) {
+            this.book = book;
+            this.count = 0;
+        }
+
+        public void increment() {
+            this.count =  this.count + 1;
+        }
     }
 
     /**
