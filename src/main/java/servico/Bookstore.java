@@ -514,6 +514,18 @@ public class Bookstore implements Serializable {
                 bookCounter.increment(line.getQty());
             })
         );
+
+        List<Counter> counters = bookCounters.values()
+                .stream()
+                .sorted(Comparator.comparingInt(counter -> counter.count))
+                .collect(Collectors.toList());
+
+        List<Book> bestSellers = counters
+                .stream()
+                .map(counter -> counter.book)
+                .collect(Collectors.toList());
+
+        return bestSellers;
     }
 
     /**
