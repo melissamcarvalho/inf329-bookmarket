@@ -51,21 +51,8 @@ package servico;
  * you give them.
  *
  ************************************************************************/
-import dominio.ShipTypes;
-import dominio.Address;
-import dominio.Author;
-import dominio.BACKINGS;
-import dominio.Book;
-import dominio.CCTransaction;
-import dominio.Cart;
-import dominio.Country;
-import dominio.CreditCards;
-import dominio.Customer;
-import dominio.Order;
-import dominio.OrderLine;
-import dominio.SUBJECTS;
-import dominio.StatusTypes;
-import dominio.Stock;
+import dominio.*;
+import recommendation.RecommendationEngine;
 import util.TPCW_Util;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -114,6 +101,8 @@ public class Bookstore implements Serializable {
 
     private static final long serialVersionUID = -3099048826035606338L;
 
+    private final RecommendationEngine recommendationEngine;
+
     private static boolean populated;
     private static final List<Country> countryById;
     private static final Map<String, Country> countryByName;
@@ -127,12 +116,10 @@ public class Bookstore implements Serializable {
     private final List<Cart> cartsById;
     private final List<Order> ordersById;
     private final LinkedList<Order> ordersByCreation;
+    private static final List<Evaluation> evaluationById;
     
     private final int id;
 
-    /**
-    
-     */
     static {
         countryById = new ArrayList<>();
         countryByName = new HashMap<>();
@@ -142,6 +129,7 @@ public class Bookstore implements Serializable {
         customersByUsername = new HashMap<>();
         authorsById = new ArrayList<>();
         booksById = new ArrayList<>();
+        evaluationById = new ArrayList<>();
     }
 
     /**
@@ -153,6 +141,8 @@ public class Bookstore implements Serializable {
         ordersById = new ArrayList<>();
         ordersByCreation = new LinkedList<>();
         stockByBook = new HashMap<>();
+
+        recommendationEngine = new RecommendationEngine(evaluationById);
     }
 
     /**
