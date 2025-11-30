@@ -68,19 +68,7 @@ import dominio.StatusTypes;
 import dominio.Stock;
 import util.TPCW_Util;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -497,8 +485,7 @@ public class Bookstore implements Serializable {
      * @return
      */
     public List<Book> getBestSellers(SUBJECTS subject) {
-        // to do
-        return null;
+        List<Book> subjectBooks = getBooksBySubject(subject);
     }
 
     /**
@@ -507,6 +494,25 @@ public class Bookstore implements Serializable {
      */
     public List<Order> getOrdersById() {
         return ordersById;
+    }
+
+    /**
+     * Returns a list of orders that contain at least one of the specified books.
+     * Filters all orders to find those where any order line contains a book from the input list.
+     *
+     * @param books the list of books to search for in orders
+     * @return a list of orders that contain at least one book from the input list
+     */
+    public List<Order> getOrdersByBooks(List<Book> books) {
+        List<Order> booksOrders = getOrdersById()
+            .stream()
+            .filter((order) -> order.getLines()
+                    .stream()
+                    .anyMatch(line -> books.contains(line.getBook()))
+            )
+            .collect(Collectors.toList());
+
+        return booksOrders;
     }
 
     /**
