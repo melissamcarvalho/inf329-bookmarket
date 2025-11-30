@@ -485,8 +485,12 @@ public class Bookstore implements Serializable {
             this.count = 0;
         }
 
+        public void increment(int add) {
+            this.count =  this.count + add;
+        }
+
         public void increment() {
-            this.count =  this.count + 1;
+            this.increment(1);
         }
     }
 
@@ -497,6 +501,19 @@ public class Bookstore implements Serializable {
      */
     public List<Book> getBestSellers(SUBJECTS subject) {
         List<Book> subjectBooks = getBooksBySubject(subject);
+        List<Order> booksOrders = getOrdersByBooks(subjectBooks);
+
+        Map<Book, Counter> bookCounters = new HashMap<Book, Counter>();
+        booksOrders.forEach(order -> order.getLines()
+            .forEach(line -> {
+                Book book = line.getBook();
+                if(bookCounters.containsKey(book)) {
+                    bookCounters.put(book, new Counter(book));
+                }
+                Counter bookCounter = bookCounters.get(book);
+                bookCounter.increment(line.getQty());
+            })
+        );
     }
 
     /**
