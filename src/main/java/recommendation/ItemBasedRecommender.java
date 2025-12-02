@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import dominio.Book;
 
-public class ItemBasedRecommender implements BaseRecommender {
+public class ItemBasedRecommender implements BaseMahoutRecommender {
     private DataModel model;
     private ItemSimilarity similarity;
 

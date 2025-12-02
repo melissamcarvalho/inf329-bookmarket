@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import dominio.Book;
 
-public class UserBasedRecommender implements BaseRecommender {
+public class UserBasedRecommender implements BaseMahoutRecommender {
     private DataModel model;
     private UserNeighborhood neighborhood;
     private UserSimilarity similarity;

@@ -5,8 +5,8 @@ import dominio.Evaluation;
 import java.util.List;
 
 public class RecommendationEngine {
-    private final BaseRecommender userBasedRecommender;
-    private final BaseRecommender itemBasedRecommender;
+    private final BaseMahoutRecommender userBasedRecommender;
+    private final BaseMahoutRecommender itemBasedRecommender;
     private List<Evaluation> evaluations;
 
     /**

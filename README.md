@@ -42,10 +42,10 @@ classDiagram
     }
 
     namespace recommendation {
-        class BaseRecommender {
+        class BaseMahoutRecommender {
             <<interface>>
             +refresh(DataModel model) void
-            +recommend(int customerId, int count) List~int~
+            +recommend(int customerId, int count) List~Book~
         }
 
         class UserBasedRecommender {
@@ -62,8 +62,8 @@ classDiagram
         }
 
         class RecommendationEngine  {
-            -BaseRecommender userBasedRecommender
-            -BaseRecommender itemBasedRecommender
+            -BaseMahoutRecommender userBasedRecommender
+            -BaseMahoutRecommender itemBasedRecommender
             +refreshModel(List~Evaluation~) void
             +recommendByItens(int customerId) List~int~
             +recommendByUsers(int customerId) List~int~
@@ -123,9 +123,9 @@ classDiagram
     }
 
     Bookstore --> RecommendationEngine
-    RecommendationEngine --> BaseRecommender
-    UserBasedRecommender ..|> BaseRecommender
-    ItemBasedRecommender ..|> BaseRecommender
+    RecommendationEngine --> BaseMahoutRecommender
+    UserBasedRecommender ..|> BaseMahoutRecommender
+    ItemBasedRecommender ..|> BaseMahoutRecommender
 
 %% Relacionamentos do Dominio
     Evaluation --> Book

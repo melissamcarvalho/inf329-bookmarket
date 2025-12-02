@@ -6,7 +6,7 @@ import java.util.List;
 
 import dominio.Book;
 
-public interface BaseRecommender {
+public interface BaseMahoutRecommender {
     /**
      * Refresh Mahout DataModel
      * @param model Mahout DataModel
