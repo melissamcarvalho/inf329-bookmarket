@@ -16,8 +16,8 @@ public class RecommendationEngine {
     public RecommendationEngine(List<Evaluation> evaluations) {
         // TODO: Adapt List<Evaluation> to DataModel
 
-        userBasedRecommender = new UserBasedRecommender();
-        itemBasedRecommender = new ItemBasedRecommender();
+        userBasedRecommender = new UserBasedRecommender(null);
+        itemBasedRecommender = new ItemBasedRecommender(null);
     }
 
     /**
