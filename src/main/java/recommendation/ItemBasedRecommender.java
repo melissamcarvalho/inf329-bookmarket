@@ -7,6 +7,7 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 import java.util.Collections;
 import java.util.List;
+import dominio.Book;
 
 public class ItemBasedRecommender implements BaseRecommender {
     private DataModel model;
@@ -31,10 +32,10 @@ public class ItemBasedRecommender implements BaseRecommender {
     /**
      * @param customer_id Costumer ID
      * @param count Count of recommendations to be returned
-     * @return List of recommended Book IDs
+     * @return List of recommended Books
      */
     @Override
-    public List<Integer> recommend(int customer_id, int count) {
+    public List<Book> recommend(int customer_id, int count) {
         // TODO
         return null;
     }
