@@ -1,13 +1,9 @@
 package recommendation;
 
 import org.apache.mahout.cf.taste.model.DataModel;
-import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
-import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
-import java.util.Collections;
 import java.util.List;
-import dominio.Book;
 
 public class ItemBasedMahoutRecommender implements BaseMahoutRecommender {
     private DataModel model;
@@ -35,7 +31,7 @@ public class ItemBasedMahoutRecommender implements BaseMahoutRecommender {
      * @return List of recommended Books
      */
     @Override
-    public List<Book> recommend(int customer_id, int count) {
+    public List<Integer> recommend(int customer_id, int count) {
         // TODO
         return null;
     }

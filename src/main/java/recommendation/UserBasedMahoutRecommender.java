@@ -140,7 +140,7 @@ public class UserBasedMahoutRecommender implements BaseMahoutRecommender {
      * @return List of recommended Books
      */
     @Override
-    public List<Book> recommend(int customer_id, int count) {
+    public List<Integer> recommend(int customer_id, int count) {
         // Ensure similarity and neighborhood are initialized with defaults if not set
         ensureInitialized();
         
@@ -152,7 +152,7 @@ public class UserBasedMahoutRecommender implements BaseMahoutRecommender {
             throw new RuntimeException("Error while recommending books", e);
         }
 
-        List<Book> recommendedBooks = new java.util.ArrayList<>();
+        List<Integer> recommendedBooks = new java.util.ArrayList<>();
         if (recommendations.isEmpty()) {
             System.out.println("  No recommendations found!");
         } else {
@@ -160,29 +160,9 @@ public class UserBasedMahoutRecommender implements BaseMahoutRecommender {
             for (int i = 0; i < recommendations.size(); i++) {
                 RecommendedItem recommendation = recommendations.get(i);
                 long item_id = recommendation.getItemID();
-                // TODO: Understand how to get Book from item_id
-                Book book = new Book(
-                    (int) item_id,           // id
-                    "Unknown Title",         // title
-                    new java.util.Date(),    // pubDate
-                    "Unknown Publisher",     // publisher
-                    null,                    // subject (SUBJECTS enum)
-                    "No description",        // desc
-                    "",                      // thumbnail
-                    "",                      // image
-                    0.0,                     // srp
-                    new java.util.Date(),    // avail
-                    "",                      // isbn
-                    0,                       // page
-                    null,                    // backing (BACKINGS enum)
-                    new int[]{0, 0, 0},      // dimensions
-                    0.0,                     // weight
-                    null                     // author
-                );
-                recommendedBooks.add(book);
+                recommendedBooks.add((int) item_id);
             }
         }
-
         return recommendedBooks;
     }
 }

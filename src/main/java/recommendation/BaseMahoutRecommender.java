@@ -4,8 +4,6 @@ import org.apache.mahout.cf.taste.model.DataModel;
 
 import java.util.List;
 
-import dominio.Book;
-
 public interface BaseMahoutRecommender {
     /**
      * Refresh Mahout DataModel
@@ -17,7 +15,7 @@ public interface BaseMahoutRecommender {
      * Run recommendation algorithm
      * @param customer_id Costumer ID
      * @param count Count of recommendations to be returned
-     * @return List of recommended Books
+     * @return List of recommended Book IDs
      */
-    public List<Book> recommend(int customer_id, int count);
+    public List<Integer> recommend(int customer_id, int count);
 }
