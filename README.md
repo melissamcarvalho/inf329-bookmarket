@@ -48,11 +48,11 @@ classDiagram
             +recommend(int customerId, int count) List~Book~
         }
 
-        class UserBasedRecommender {
+        class UserBasedMahoutRecommender {
             -DataModel model
             -UserSimilarity similarity
             -UserNeighborhood neighborhood
-            UserBasedRecommender(DataModel model)
+            UserBasedMahoutRecommender(DataModel model)
         }
 
         class ItemBasedMahoutRecommender {
@@ -62,7 +62,7 @@ classDiagram
         }
 
         class RecommendationEngine  {
-            -BaseMahoutRecommender userBasedRecommender
+            -BaseMahoutRecommender userBasedMahoutRecommender
             -BaseMahoutRecommender itemBasedMahoutRecommender
             +refreshModel(List~Evaluation~) void
             +recommendByItens(int customerId) List~int~
@@ -124,7 +124,7 @@ classDiagram
 
     Bookstore --> RecommendationEngine
     RecommendationEngine --> BaseMahoutRecommender
-    UserBasedRecommender ..|> BaseMahoutRecommender
+    UserBasedMahoutRecommender ..|> BaseMahoutRecommender
     ItemBasedMahoutRecommender ..|> BaseMahoutRecommender
 
 %% Relacionamentos do Dominio

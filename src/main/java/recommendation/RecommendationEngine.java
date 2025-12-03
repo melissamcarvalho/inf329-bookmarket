@@ -5,7 +5,7 @@ import dominio.Evaluation;
 import java.util.List;
 
 public class RecommendationEngine {
-    private final BaseMahoutRecommender userBasedRecommender;
+    private final BaseMahoutRecommender userBasedMahoutRecommender;
     private final BaseMahoutRecommender itemBasedMahoutRecommender;
     private List<Evaluation> evaluations;
 
@@ -16,7 +16,7 @@ public class RecommendationEngine {
     public RecommendationEngine(List<Evaluation> evaluations) {
         // TODO: Adapt List<Evaluation> to DataModel
 
-        userBasedRecommender = new UserBasedRecommender(null);
+        userBasedMahoutRecommender = new UserBasedMahoutRecommender(null);
         itemBasedMahoutRecommender = new ItemBasedMahoutRecommender(null);
     }
 
