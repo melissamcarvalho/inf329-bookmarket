@@ -6,7 +6,7 @@ import java.util.List;
 
 public class RecommendationEngine {
     private final BaseMahoutRecommender userBasedRecommender;
-    private final BaseMahoutRecommender itemBasedRecommender;
+    private final BaseMahoutRecommender itemBasedMahoutRecommender;
     private List<Evaluation> evaluations;
 
     /**
@@ -17,7 +17,7 @@ public class RecommendationEngine {
         // TODO: Adapt List<Evaluation> to DataModel
 
         userBasedRecommender = new UserBasedRecommender(null);
-        itemBasedRecommender = new ItemBasedRecommender(null);
+        itemBasedMahoutRecommender = new ItemBasedMahoutRecommender(null);
     }
 
     /**

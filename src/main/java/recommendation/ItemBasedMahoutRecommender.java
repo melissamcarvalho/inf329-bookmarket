@@ -9,14 +9,14 @@ import java.util.Collections;
 import java.util.List;
 import dominio.Book;
 
-public class ItemBasedRecommender implements BaseMahoutRecommender {
+public class ItemBasedMahoutRecommender implements BaseMahoutRecommender {
     private DataModel model;
     private ItemSimilarity similarity;
 
     /**
      * @param model Mahout DataModel
      */
-    public ItemBasedRecommender(DataModel model) {
+    public ItemBasedMahoutRecommender(DataModel model) {
         // TODO
     }
 
