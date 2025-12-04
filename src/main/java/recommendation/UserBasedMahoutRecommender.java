@@ -10,7 +10,6 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 
 import java.util.List;
-import dominio.Book;
 
 public class UserBasedMahoutRecommender implements BaseMahoutRecommender {
     private DataModel model;
