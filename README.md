@@ -22,7 +22,6 @@ classDiagram
             -int id
             ...
         }
-
         class Customer {
             -int id
             ...
@@ -91,7 +90,7 @@ classDiagram
             +getPriceBookRecommendationByUsers(int costumerId) Map~Book, Double~
             +getBestSellers(SUBJECT subject) Map~Book, Set~Stock~~
         }
-
+    
         class StateMachine {
             -List~Bookstore~ state
             +execute(Action) Object
