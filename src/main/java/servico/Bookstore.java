@@ -505,18 +505,17 @@ public class Bookstore implements Serializable {
         Map<Book, Integer> bookSales = new HashMap<>();
 
         // Iterate through all orders to find sales of books of the given subject
-        for (Order order : ordersByCreation) {
-            // A sale is considered valid if the order status is PROCESSING or SHIPPED
-            if (order.getStatus() == StatusTypes.PROCESSING || order.getStatus() == StatusTypes.SHIPPED) {
-                for (OrderLine line : order.getLines()) {
-                    Book book = line.getBook();
-                    // If the book subject matches, update the sales count
-                    if (book.getSubject().equals(subject)) {
-                        bookSales.put(book, bookSales.getOrDefault(book, 0) + line.getQty());
-                    }
-                }
-            }
-        }
+        ordersByCreation.stream()
+            .filter(order -> !order.isDenined())
+            .forEach(order -> { 
+                order.getLines().stream()
+                    .filter(line -> line.getBook().getSubject().equals(subject))
+                    .forEach(line -> {
+                        // Update the sales count
+                        bookSales.put(line.getBook(), bookSales.getOrDefault(line.getBook(), 0) + line.getQty());
+                    });
+            });
+        
         return bookSales;
     }
 

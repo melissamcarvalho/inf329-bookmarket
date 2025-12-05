@@ -302,7 +302,7 @@ public class Bookmarket {
 
         // Aggregate sales data from all bookstores
         getBookstoreStream().forEach(bookstore -> {
-            Map<Book, Integer> sales = ((Bookstore) bookstore).getBestSellers(subject);
+            Map<Book, Integer> sales = bookstore.getBestSellers(subject);
             sales.forEach((book, count) -> aggregateSales.merge(book, count, Integer::sum));
         });
 
@@ -315,16 +315,16 @@ public class Bookmarket {
 
         // For each top book, get all its stocks sorted by cost
         Map<Book, Set<Stock>> result = new LinkedHashMap<>();
-        for (Book book : bestSellers) {
+        bestSellers.forEach( book -> {
             Set<Stock> stocks = new TreeSet<>(Comparator.comparing(Stock::getCost));
             getBookstoreStream().forEach(bookstore -> {
-                Stock stock = ((Bookstore) bookstore).getStock(book.getId());
+                Stock stock = bookstore.getStock(book.getId());
                 if (stock != null) {
                     stocks.add(stock);
                 }
             });
             result.put(book, stocks);
-        }
+        });
 
         return result;
     }
