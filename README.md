@@ -22,28 +22,57 @@ classDiagram
             -int id
             ...
         }
-        
         class Customer {
             -int id
             ...
         }
-        
+
         class Evaluation {
             -int id
-            -Costumer costumer
+            -Customer customer
             -Book book
             -double rating
-            +Evaluation(Costumer, Book, double)
+            +Evaluation(Customer c, Book b, double rating)
             +setRating(double) void
             +getRating() double
-            +getCostumer() Costumer
+            +getCustomer() Customer
             +getBook() Book
+        }
+    }
+
+    namespace recommendation {
+        class BaseMahoutRecommender {
+            <<interface>>
+            +refresh(DataModel model) void
+            +recommend(int customerId, int count) List~Book~
+        }
+
+        class UserBasedMahoutRecommender {
+            -DataModel model
+            -UserSimilarity similarity
+            -UserNeighborhood neighborhood
+            UserBasedMahoutRecommender(DataModel model)
+        }
+
+        class ItemBasedMahoutRecommender {
+            -DataModel model
+            -ItemSimilarity similarity
+            ItemBasedMahoutRecommender(DataModel model)
+        }
+
+        class RecommendationEngine  {
+            -BaseMahoutRecommender userBasedMahoutRecommender
+            -BaseMahoutRecommender itemBasedMahoutRecommender
+            +refreshModel(List~Evaluation~) void
+            +recommendByItens(int customerId) List~int~
+            +recommendByUsers(int customerId) List~int~
         }
     }
 
     namespace service {
         class Bookstore {
             -List~Evaluation~ evaluationById
+            -RecommendationEngine recommendationEngine
             ...
             +createEvaluation(int costumerId, int bookId, double rating) void
             +updateEvaluation(int id, double rating) void
@@ -72,19 +101,19 @@ classDiagram
             ...
             +executeOn(Object) Object
         }
-        
+
         class BookstoreAction {
             <<abstract>>
             ...
             +executeOnBookstore(Stream~Bookstore~) Object
         }
-        
+
         class CreateEvaluationAction {
             ...
             CreateEvaluationAction(int costumerId, int bookId, double rating)
             +executeOnBookstore(Stream~Bookstore~) Object
         }
-        
+
         class UpdateEvaluationAction {
             ...
             UpdateEvaluationAction(int id, double rating)
@@ -92,11 +121,16 @@ classDiagram
         }
     }
 
-    %% Relacionamentos do Dominio
+    Bookstore --> RecommendationEngine
+    RecommendationEngine --> BaseMahoutRecommender
+    UserBasedMahoutRecommender ..|> BaseMahoutRecommender
+    ItemBasedMahoutRecommender ..|> BaseMahoutRecommender
+
+%% Relacionamentos do Dominio
     Evaluation --> Book
     Evaluation --> Customer
 
-    %% Relacionamentos de Serviço
+%% Relacionamentos de Serviço
     Bookmarket --> StateMachine
     StateMachine --> Bookstore
 
@@ -104,11 +138,11 @@ classDiagram
 
     Bookstore ..> TPCW_Util
 
-    %% Command Pattern Hierarchy
+%% Command Pattern Hierarchy
     BookstoreAction ..|> Action
     CreateEvaluationAction --|> BookstoreAction
     UpdateEvaluationAction --|> BookstoreAction
-    
+
     Bookmarket ..> BookstoreAction
 ```
 
