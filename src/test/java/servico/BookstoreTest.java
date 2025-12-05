@@ -21,6 +21,9 @@ import dominio.Customer;
 import dominio.SUBJECTS;
 import dominio.ShipTypes;
 import dominio.StatusTypes;
+import dominio.Order;
+import java.util.Arrays;
+import static org.junit.Assert.*;
 
 /**
  *

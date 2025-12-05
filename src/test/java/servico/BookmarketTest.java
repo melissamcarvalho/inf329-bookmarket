@@ -23,6 +23,11 @@ import dominio.SUBJECTS;
 import dominio.ShipTypes;
 import dominio.StatusTypes;
 import dominio.Stock;
+import dominio.Order;
+import java.util.HashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -77,6 +82,7 @@ public class BookmarketTest {
              */
             for (int j = 0; j < items; j++) {
                 bookstore.updateStock(j, 1);
+                //bookstore.updateStock(j, 1);
             }
 
             bookstores[i] = bookstore;
@@ -143,7 +149,7 @@ public class BookmarketTest {
     }
 
     /**
-     * Test of getStocksRecommendationByUsers method, of class Bookmarket.
+     * Test of getPriceBookRecommendationByUsers method, of class Bookmarket.
      */
     @Test
     public void testGetStocksRecommendationByUsers() {

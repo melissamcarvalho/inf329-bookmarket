@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -28,38 +29,26 @@ import dominio.Stock;
 import util.TPCW_Util;
 
 /**
- * The {@code Bookmarket} class serves as the main service layer and entry point
- * for the Bookmarket system.
+ * The {@code Bookmarket} class serves as the main service layer and entry point for the Bookmarket system.
  * <p>
  * <b>Architecture Overview:</b><br>
- * Bookmarket acts as a facade, exposing high-level operations for managing
- * books, customers, orders, carts, and recommendations. It coordinates the
- * underlying business logic and data, which are distributed across multiple
- * {@link Bookstore} instances (representing different stores or partitions of
- * the market).
+ * Bookmarket acts as a facade, exposing high-level operations for managing books, customers, orders, carts,
+ * and recommendations. It coordinates the underlying business logic and data, which are distributed across
+ * multiple {@link Bookstore} instances (representing different stores or partitions of the market).
  * <ul>
- * <li>Manages the global state of the system via a {@code StateMachine} that
- * holds all {@code Bookstore} objects.</li>
- * <li>Provides static methods for searching, retrieving, and manipulating
- * books, customers, and orders.</li>
- * <li>Delegates most domain-specific logic to the {@code Bookstore} class,
- * acting as a central access point.</li>
- * <li>Supports recommendations, best-seller queries, and price aggregation
- * across all bookstores.</li>
- * <li>Handles system initialization and data population for testing or
- * demonstration purposes.</li>
+ *   <li>Manages the global state of the system via a {@code StateMachine} that holds all {@code Bookstore} objects.</li>
+ *   <li>Provides static methods for searching, retrieving, and manipulating books, customers, and orders.</li>
+ *   <li>Delegates most domain-specific logic to the {@code Bookstore} class, acting as a central access point.</li>
+ *   <li>Supports recommendations, best-seller queries, and price aggregation across all bookstores.</li>
+ *   <li>Handles system initialization and data population for testing or demonstration purposes.</li>
  * </ul>
  * <b>Key Responsibilities:</b>
  * <ul>
- * <li>System initialization and seeding with {@link #init(int, Bookstore...)}
- * and {@link #populate(int, int, int, int, int)}.</li>
- * <li>Customer management: creation, session refresh, and retrieval.</li>
- * <li>Book management: search by subject, title, author, and retrieval of new
- * products.</li>
- * <li>Order and cart management, including recommendations and best-seller
- * listings.</li>
- * <li>Acts as a bridge between the client layer and the domain logic in
- * {@code Bookstore}.</li>
+ *   <li>System initialization and seeding with {@link #init(int, Bookstore...)} and {@link #populate(int, int, int, int, int)}.</li>
+ *   <li>Customer management: creation, session refresh, and retrieval.</li>
+ *   <li>Book management: search by subject, title, author, and retrieval of new products.</li>
+ *   <li>Order and cart management, including recommendations and best-seller listings.</li>
+ *   <li>Acts as a bridge between the client layer and the domain logic in {@code Bookstore}.</li>
  * </ul>
  * <p>
  * <img src="./doc-files/Bookstore.png" alt="Bookmarket">
@@ -88,7 +77,6 @@ public class Bookmarket {
         void checkpoint() {
 
         }
-
         List<Bookstore> getState() {
             return state;
         }
