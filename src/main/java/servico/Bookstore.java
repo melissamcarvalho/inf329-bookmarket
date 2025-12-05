@@ -51,6 +51,21 @@ package servico;
  * you give them.
  *
  ************************************************************************/
+import dominio.ShipTypes;
+import dominio.Address;
+import dominio.Author;
+import dominio.BACKINGS;
+import dominio.Book;
+import dominio.CCTransaction;
+import dominio.Cart;
+import dominio.Country;
+import dominio.CreditCards;
+import dominio.Customer;
+import dominio.Order;
+import dominio.OrderLine;
+import dominio.SUBJECTS;
+import dominio.StatusTypes;
+import dominio.Stock;
 import dominio.*;
 import recommendation.RecommendationEngine;
 import util.TPCW_Util;
@@ -486,9 +501,22 @@ public class Bookstore implements Serializable {
      * @param subject
      * @return
      */
-    public List<Book> getBestSellers(SUBJECTS subject) {
-        // to do
-        return null;
+    public Map<Book, Integer> getBestSellers(SUBJECTS subject) {
+        Map<Book, Integer> bookSales = new HashMap<>();
+
+        // Iterate through all orders to find sales of books of the given subject
+        ordersByCreation.stream()
+            .filter(order -> !order.isDenined())
+            .forEach(order -> { 
+                order.getLines().stream()
+                    .filter(line -> line.getBook().getSubject().equals(subject))
+                    .forEach(line -> {
+                        // Update the sales count
+                        bookSales.put(line.getBook(), bookSales.getOrDefault(line.getBook(), 0) + line.getQty());
+                    });
+            });
+        
+        return bookSales;
     }
 
     /**
@@ -662,7 +690,7 @@ public class Bookstore implements Serializable {
      */
     public Order confirmBuy(int customerId, int cartId, String comment,
             CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
-            ShipTypes shipping, Date shippingDate, int addressId, long now) {
+            ShipTypes shipping, Date shippingDate, int addressId, long now, StatusTypes status) {
         Customer customer = getCustomer(customerId);
         Cart cart = getCart(cartId);
         Address shippingAddress = customer.getAddress();
@@ -680,8 +708,19 @@ public class Bookstore implements Serializable {
                 ccExpiry, "", cart.total(customer),
                 new Date(now), shippingAddress.getCountry());
         return createOrder(customer, new Date(now), cart, comment, shipping,
-                shippingDate, StatusTypes.PENDING, customer.getAddress(),
+                shippingDate, status, customer.getAddress(),
                 shippingAddress, ccTransact);
+    }
+
+    /**
+    
+     */
+    public Order confirmBuy(int customerId, int cartId, String comment,
+            CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
+            ShipTypes shipping, Date shippingDate, int addressId, long now) {
+        return confirmBuy(customerId, cartId, comment, ccType, ccNumber, ccName,
+                ccExpiry, shipping, shippingDate, addressId, now,
+                StatusTypes.PENDING);
     }
 
     private Order createOrder(Customer customer, Date date, Cart cart,

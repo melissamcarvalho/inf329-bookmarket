@@ -3,11 +3,16 @@ package servico;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,6 +24,7 @@ import dominio.Customer;
 import dominio.Order;
 import dominio.SUBJECTS;
 import dominio.ShipTypes;
+import dominio.StatusTypes;
 import dominio.Stock;
 import util.TPCW_Util;
 
@@ -71,7 +77,6 @@ public class Bookmarket {
         void checkpoint() {
 
         }
-        
         List<Bookstore> getState() {
             return state;
         }
@@ -97,8 +102,6 @@ public class Bookmarket {
     static StateMachine getStateMachine() {
         return stateMachine;
     }
-    
-    
 
     /**
      *
@@ -295,8 +298,35 @@ public class Bookmarket {
      * @return
      */
     public static Map<Book, Set<Stock>> getBestSellers(SUBJECTS subject) {
-        // to do
-        return null;
+        Map<Book, Integer> aggregateSales = new HashMap<>();
+
+        // Aggregate sales data from all bookstores
+        getBookstoreStream().forEach(bookstore -> {
+            Map<Book, Integer> sales = bookstore.getBestSellers(subject);
+            sales.forEach((book, count) -> aggregateSales.merge(book, count, Integer::sum));
+        });
+
+        // Sort books by aggregated sales in descending order
+        List<Book> topBooks = new ArrayList<>(aggregateSales.keySet());
+        topBooks.sort((b1, b2) -> aggregateSales.get(b2).compareTo(aggregateSales.get(b1)));
+
+        // Limit to the top 50
+        List<Book> bestSellers = topBooks.subList(0, Math.min(50, topBooks.size()));
+
+        // For each top book, get all its stocks sorted by cost
+        Map<Book, Set<Stock>> result = new LinkedHashMap<>();
+        bestSellers.forEach( book -> {
+            Set<Stock> stocks = new TreeSet<>(Comparator.comparing(Stock::getCost));
+            getBookstoreStream().forEach(bookstore -> {
+                Stock stock = bookstore.getStock(book.getId());
+                if (stock != null) {
+                    stocks.add(stock);
+                }
+            });
+            result.put(book, stocks);
+        });
+
+        return result;
     }
 
     /**
@@ -474,13 +504,68 @@ public class Bookmarket {
      */
     public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
             CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
-            ShipTypes shipping) {
+            ShipTypes shipping, StatusTypes status) {
         long now = System.currentTimeMillis();
         try {
             return (Order) stateMachine.execute(new ConfirmBuyAction(storeId,
                     customer_id, shopping_id, randomComment(),
                     cc_type, cc_number, cc_name, cc_expiry, shipping,
-                    randomShippingDate(now), -1, now));
+                    randomShippingDate(now), -1, now, status));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     *
+     * @param storeId
+     * @param shopping_id
+     * @param customer_id
+     * @param cc_type
+     * @param cc_number
+     * @param cc_name
+     * @param cc_expiry
+     * @param shipping
+     * @return
+     */
+    public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
+            CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
+            ShipTypes shipping) {
+        return doBuyConfirm(storeId, shopping_id, customer_id, cc_type,
+                cc_number, cc_name, cc_expiry, shipping, StatusTypes.PENDING);
+    }
+
+    /**
+     *
+     * @param storeId
+     * @param shopping_id
+     * @param customer_id
+     * @param cc_type
+     * @param cc_number
+     * @param cc_name
+     * @param cc_expiry
+     * @param shipping
+     * @param street_1
+     * @param street_2
+     * @param city
+     * @param state
+     * @param zip
+     * @param country
+     * @param status
+     * @return
+     */
+    public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
+            CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
+            ShipTypes shipping, String street_1, String street_2, String city,
+            String state, String zip, String country, StatusTypes status) {
+        Address address = Bookstore.alwaysGetAddress(street_1, street_2,
+                city, state, zip, country);
+        long now = System.currentTimeMillis();
+        try {
+            return (Order) stateMachine.execute(new ConfirmBuyAction(storeId,
+                    customer_id, shopping_id, randomComment(),
+                    cc_type, cc_number, cc_name, cc_expiry, shipping,
+                    randomShippingDate(now), address.getId(), now, status));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -508,17 +593,9 @@ public class Bookmarket {
             CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
             ShipTypes shipping, String street_1, String street_2, String city,
             String state, String zip, String country) {
-        Address address = Bookstore.alwaysGetAddress(street_1, street_2,
-                city, state, zip, country);
-        long now = System.currentTimeMillis();
-        try {
-            return (Order) stateMachine.execute(new ConfirmBuyAction(storeId,
-                    customer_id, shopping_id, randomComment(),
-                    cc_type, cc_number, cc_name, cc_expiry, shipping,
-                    randomShippingDate(now), address.getId(), now));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return doBuyConfirm(storeId, shopping_id, customer_id, cc_type,
+                cc_number, cc_name, cc_expiry, shipping, street_1, street_2,
+                city, state, zip, country, StatusTypes.PENDING);
     }
 
     private static String randomComment() {
@@ -820,6 +897,7 @@ public class Bookmarket {
         Date shippingDate;
         int addressId;
         long now;
+        StatusTypes status;
 
         /**
          *
@@ -835,11 +913,12 @@ public class Bookmarket {
          * @param shippingDate
          * @param addressId
          * @param now
+         * @param status
          */
         public ConfirmBuyAction(int storeId, int customerId, int cartId,
                 String comment, CreditCards ccType, long ccNumber,
                 String ccName, Date ccExpiry, ShipTypes shipping,
-                Date shippingDate, int addressId, long now) {
+                Date shippingDate, int addressId, long now, StatusTypes status) {
             this.storeId = storeId;
             this.customerId = customerId;
             this.cartId = cartId;
@@ -852,6 +931,7 @@ public class Bookmarket {
             this.shippingDate = shippingDate;
             this.addressId = addressId;
             this.now = now;
+            this.status = status;
         }
 
         /**
@@ -863,7 +943,7 @@ public class Bookmarket {
         public Object executeOnBookstore(Stream<Bookstore> bookstore) {
             return bookstore.filter(bs -> bs.getId() == this.storeId).findFirst().get().confirmBuy(customerId, cartId, comment, ccType,
                     ccNumber, ccName, ccExpiry, shipping, shippingDate,
-                    addressId, now);
+                    addressId, now, status);
         }
     }
 

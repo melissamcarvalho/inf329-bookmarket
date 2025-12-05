@@ -211,6 +211,10 @@ public class Order implements Serializable {
         return status;
     }
 
+    public boolean isDenined() {
+        return this.getStatus().equals(StatusTypes.DENIED);
+    }
+
     /**
      *
      * @return

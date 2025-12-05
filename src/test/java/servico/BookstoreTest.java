@@ -1,23 +1,28 @@
 package servico;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import dominio.Address;
 import dominio.Author;
 import dominio.Book;
 import dominio.Cart;
 import dominio.CreditCards;
 import dominio.Customer;
-import dominio.Order;
 import dominio.SUBJECTS;
 import dominio.ShipTypes;
+import dominio.StatusTypes;
+import dominio.Order;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
@@ -57,6 +62,48 @@ public class BookstoreTest {
 
     @After
     public void tearDown() {
+    }
+
+    /**
+     * Test of getBestSellers method, of class Bookstore.
+     */
+    @Test
+    public void testGetBestSellers() {
+        System.out.println("getBestSellers");
+        SUBJECTS subject = SUBJECTS.ARTS;
+
+        // 1. Get baseline sales
+        Map<Book, Integer> baselineSales = instance.getBestSellers(subject);
+
+        // 2. Create a new sale
+        List<Book> artBooks = instance.getBooksBySubject(subject);
+        Book book1 = artBooks.get(0);
+        Book book2 = artBooks.get(1);
+
+        int baselineCount1 = baselineSales.getOrDefault(book1, 0);
+        int baselineCount2 = baselineSales.getOrDefault(book2, 0);
+
+        int qty1 = 100;
+        int qty2 = 50;
+
+        Customer customer = instance.getCustomer(1);
+        Cart cart = instance.createCart(System.currentTimeMillis());
+        cart.increaseLine(instance.getStock(book1.getId()), qty1);
+        cart.increaseLine(instance.getStock(book2.getId()), qty2);
+
+        instance.confirmBuy(customer.getId(), cart.getId(), "Test comment",
+                CreditCards.VISA, 1234567890123456L, "Test Customer", new Date(),
+                ShipTypes.AIR, new Date(), customer.getAddress().getId(),
+                System.currentTimeMillis(), StatusTypes.SHIPPED);
+
+        // 3. Get new sales and assert
+        Map<Book, Integer> newSales = instance.getBestSellers(subject);
+
+        int newCount1 = newSales.getOrDefault(book1, 0);
+        int newCount2 = newSales.getOrDefault(book2, 0);
+
+        assertEquals(baselineCount1 + qty1, newCount1);
+        assertEquals(baselineCount2 + qty2, newCount2);
     }
 
     /**
