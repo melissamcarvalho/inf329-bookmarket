@@ -215,6 +215,18 @@ public class Order implements Serializable {
         return this.getStatus().equals(StatusTypes.DENIED);
     }
 
+    public boolean isPending() {
+        return this.getStatus().equals(StatusTypes.PENDING);
+    }
+
+    public boolean isShipped() {
+        return this.getStatus().equals(StatusTypes.SHIPPED);
+    }
+
+    public boolean isProcessed() {
+        return this.getStatus().equals(StatusTypes.PROCESSING);
+    }
+
     /**
      *
      * @return
