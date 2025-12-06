@@ -9,8 +9,14 @@ package dominio;
  */
 public class Evaluation {
 
-   // to do
-    
+    public int userId;
+    public int itemId;
+    public double score;
 
+    public Evaluation(int userId, int itemId, double score) {
+        this.userId = userId;
+        this.itemId = itemId;
+        this.score = score;
+    }
     
 }
