@@ -28,6 +28,8 @@ import dominio.StatusTypes;
 import dominio.Stock;
 import util.TPCW_Util;
 
+import recommendation.RecommendationSettings;
+
 /**
  * The {@code Bookmarket} class serves as the main service layer and entry point for the Bookmarket system.
  * <p>
@@ -77,11 +79,12 @@ public class Bookmarket {
         void checkpoint() {
 
         }
+
         List<Bookstore> getState() {
             return state;
         }
 
-        Stream getStateStream() {
+        Stream<Bookstore> getStateStream() {
             return state.stream();
         }
 
@@ -107,13 +110,17 @@ public class Bookmarket {
      *
      * @param state
      */
-    public static void init(int seed, Bookstore... state) {
+    public static void init(int seed, final RecommendationSettings settings, Bookstore... state) {
         random = new Random(seed);
         try {
             stateMachine = StateMachine.create(state);
         } catch (UmbrellaException e) {
             throw new RuntimeException(e);
         }
+        
+        stateMachine.getStateStream().forEach(
+            store -> store.setSettings(settings)
+        );
     }
 
     private static Stream<Bookstore> getBookstoreStream() {

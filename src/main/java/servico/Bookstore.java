@@ -68,6 +68,7 @@ import dominio.StatusTypes;
 import dominio.Stock;
 import dominio.*;
 import recommendation.RecommendationEngine;
+import recommendation.RecommendationSettings;
 import util.TPCW_Util;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -157,7 +158,11 @@ public class Bookstore implements Serializable {
         ordersByCreation = new LinkedList<>();
         stockByBook = new HashMap<>();
 
-        recommendationEngine = new RecommendationEngine(evaluationById);
+        recommendationEngine = new RecommendationEngine(evaluationById, new RecommendationSettings());
+    }
+
+    public void setSettings(final RecommendationSettings settings) {
+        this.recommendationEngine.setSettings(settings);
     }
 
     /**

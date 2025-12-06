@@ -10,6 +10,9 @@ import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 import org.junit.Before;
 import org.junit.Test;
+
+import recommendation.mahout.UserBasedMahoutRecommender;
+
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -22,6 +25,7 @@ public class UserBasedMahoutRecommenderTest {
     
     private DataModel dataModel;
     private UserBasedMahoutRecommender recommender;
+    private RecommendationSettings settings = new RecommendationSettings();
     
     @Before
     public void setUp() throws Exception {
@@ -91,7 +95,7 @@ public class UserBasedMahoutRecommenderTest {
         dataModel = new GenericDataModel(userData);
         
         // Initialize recommender
-        recommender = new UserBasedMahoutRecommender(dataModel);
+        recommender = new UserBasedMahoutRecommender(settings, dataModel);
     }
     
     /**
@@ -107,16 +111,12 @@ public class UserBasedMahoutRecommenderTest {
      */
     @Test
     public void testDefaultSimilarity() {
-        // Initially similarity should be null in constructor
-        assertNull("Similarity should initially be null", recommender.getSimilarity());
-    
         // After calling recommend, similarity should be auto-initialized with default Pearson Correlation Similarity
         recommender.recommend(1, 1);
-        assertNotNull("Similarity should be auto-initialized after recommend", recommender.getSimilarity());
-
+        assertNotNull("Similarity should be auto-initialized after recommend", recommender.getMahoutSimilarity());
         // Check that the similarity is of type PearsonCorrelationSimilarity
         assertTrue("Similarity should be PearsonCorrelationSimilarity", 
-            recommender.getSimilarity() instanceof org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity);
+            recommender.getMahoutSimilarity() instanceof org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity);
 
     }
     
@@ -125,10 +125,11 @@ public class UserBasedMahoutRecommenderTest {
      */
     @Test
     public void testSetCustomSimilarity() throws Exception {
-        UserSimilarity customSimilarity = new EuclideanDistanceSimilarity(dataModel);
-        recommender.setSimilarity(customSimilarity);
+        RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 2);
+        recommender.setSettings(settings);
         
-        assertEquals("Custom similarity should be set", customSimilarity, recommender.getSimilarity());
+        assertTrue("Similarity should be EuclideanDistanceSimilarity", 
+            recommender.getMahoutSimilarity() instanceof org.apache.mahout.cf.taste.impl.similarity.EuclideanDistanceSimilarity);
     }
     
     /**
@@ -136,16 +137,12 @@ public class UserBasedMahoutRecommenderTest {
      */
     @Test
     public void testDefaultNeighborhood() {
-        // Initially neighborhood should be null in constructor
-        assertNull("Neighborhood should initially be null", recommender.getNeighborhood());
-        
         // After calling recommend, neighborhood should be auto-initialized
         recommender.recommend(1, 1);
-        assertNotNull("Neighborhood should be auto-initialized after recommend", recommender.getNeighborhood());
-
+        assertNotNull("Neighborhood should be auto-initialized after recommend", recommender.getMahoutNeighborhood());
         // Check that the neighborhood is of type NearestNUserNeighborhood
         assertTrue("Neighborhood should be NearestNUserNeighborhood", 
-            recommender.getNeighborhood() instanceof org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood);
+            recommender.getMahoutNeighborhood() instanceof org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood);
     }
     
     /**
@@ -153,11 +150,12 @@ public class UserBasedMahoutRecommenderTest {
      */
     @Test
     public void testSetCustomNeighborhood() throws Exception {
-        UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModel);
-        UserNeighborhood customNeighborhood = new NearestNUserNeighborhood(3, similarity, dataModel);
+        RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 5);
+        recommender.setSettings(settings);
         
-        recommender.setNeighborhood(customNeighborhood);
-        assertEquals("Custom neighborhood should be set", customNeighborhood, recommender.getNeighborhood());
+        assertTrue("Similarity should be EuclideanDistanceSimilarity", 
+            recommender.getMahoutSimilarity() instanceof org.apache.mahout.cf.taste.impl.similarity.EuclideanDistanceSimilarity);
+        assertEquals("Neighborhood size should be updated", 5, recommender.getMahoutNeighborhoodSize());
     }
     
     /**
@@ -165,10 +163,14 @@ public class UserBasedMahoutRecommenderTest {
      */
     @Test
     public void testNeighborhoodSize() {
-        assertEquals("Default neighborhood size should be 2", 2, recommender.getNeighborhoodSize());
-        
-        recommender.setNeighborhoodSize(5);
-        assertEquals("Neighborhood size should be updated", 5, recommender.getNeighborhoodSize());
+        RecommendationSettings defaultSettings = new RecommendationSettings();
+        recommender.setSettings(defaultSettings);
+
+        assertEquals("Default neighborhood size should be 2", 2, recommender.getMahoutNeighborhoodSize());
+        RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 5);
+        recommender.setSettings(settings);
+
+        assertEquals("Neighborhood size should be updated", 5, recommender.getMahoutNeighborhoodSize());
     }
     
     /**
@@ -178,8 +180,8 @@ public class UserBasedMahoutRecommenderTest {
     @Test
     public void testRecommendWithDefaults() throws Exception {
         // Use Euclidean Distance Similarity which works with uniform ratings
-        UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModel);
-        recommender.setSimilarity(similarity);
+        RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 2);
+        recommender.setSettings(settings);
         
         // Request recommendations for user 1 (who likes items 1, 2, 3)
         // Should recommend item 4 based on similar users
@@ -226,8 +228,8 @@ public class UserBasedMahoutRecommenderTest {
     @Test
     public void testRecommendUser1() throws Exception {
         // Use Euclidean Distance Similarity which works with uniform ratings
-        UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModel);
-        recommender.setSimilarity(similarity);
+        RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 2);
+        recommender.setSettings(settings);
         
         List<Integer> recommendations = recommender.recommend(1, 1);
         
@@ -247,8 +249,8 @@ public class UserBasedMahoutRecommenderTest {
     @Test
     public void testRecommendUser2() throws Exception {
         // Use Euclidean Distance Similarity which works with uniform ratings
-        UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModel);
-        recommender.setSimilarity(similarity);
+        RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 2);
+        recommender.setSettings(settings);
         
         List<Integer> recommendations = recommender.recommend(2, 1);
         
@@ -267,8 +269,8 @@ public class UserBasedMahoutRecommenderTest {
     @Test
     public void testRecommendUser3() throws Exception {
         // Use Euclidean Distance Similarity which works with uniform ratings
-        UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModel);
-        recommender.setSimilarity(similarity);
+       RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 2);
+        recommender.setSettings(settings);
         
         List<Integer> recommendations = recommender.recommend(3, 1);
         
@@ -288,8 +290,8 @@ public class UserBasedMahoutRecommenderTest {
     @Test
     public void testRecommendUser4() throws Exception {
         // Use Euclidean Distance Similarity which works with uniform ratings
-        UserSimilarity similarity = new EuclideanDistanceSimilarity(dataModel);
-        recommender.setSimilarity(similarity);
+        RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 2);
+        recommender.setSettings(settings);
         
         List<Integer> recommendations = recommender.recommend(4, 1);
         

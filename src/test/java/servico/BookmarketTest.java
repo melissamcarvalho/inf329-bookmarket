@@ -23,6 +23,7 @@ import dominio.SUBJECTS;
 import dominio.ShipTypes;
 import dominio.StatusTypes;
 import dominio.Stock;
+import recommendation.RecommendationSettings;
 import dominio.Order;
 import java.util.HashMap;
 import java.util.stream.Collectors;
@@ -90,7 +91,9 @@ public class BookmarketTest {
             bookstores[i] = bookstore;
         }
 
-        Bookmarket.init(0, bookstores);
+        RecommendationSettings recommendationSettings = new RecommendationSettings();
+
+        Bookmarket.init(0, recommendationSettings, bookstores);
         Bookmarket.populate(items, customers, addresses, authors, orders, stocks, evaluations);
 
         // Create a predictable sales scenario for best-seller testing
