@@ -46,10 +46,12 @@ public class BookstoreTest {
         int addresses = 1000;
         int authors = 100;
         int orders = 10000;
+        int stocks = 10000;
+        int evaluations = 1000;
         Random rand = new Random(seed);
         Bookstore.populate(seed, now, items, customers, addresses, authors);
         instance = new Bookstore(0);
-        instance.populateInstanceBookstore(orders, rand, now);
+        instance.populateInstanceBookstore(orders, stocks, evaluations, rand, now);
     }
 
     @AfterClass

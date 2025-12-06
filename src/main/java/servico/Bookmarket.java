@@ -613,14 +613,16 @@ public class Bookmarket {
      * @param addresses
      * @param authors
      * @param orders
+     * @param stocks
+     * @param evaluations
      * @return
      */
     public static boolean populate(int items, int customers, int addresses,
-            int authors, int orders) {
+            int authors, int orders, int stocks, int evaluations) {
         try {
             return (Boolean) stateMachine.execute(new PopulateAction(random.nextLong(),
                     System.currentTimeMillis(), items, customers, addresses,
-                    authors, orders));
+                    authors, orders, stocks, evaluations));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -961,6 +963,8 @@ public class Bookmarket {
         int addresses;
         int authors;
         int orders;
+        int stocks;
+        int evaluations;
 
         /**
          *
@@ -973,7 +977,7 @@ public class Bookmarket {
          * @param orders
          */
         public PopulateAction(long seed, long now, int items, int customers,
-                int addresses, int authors, int orders) {
+                int addresses, int authors, int orders, int stocks, int evaluations) {
             this.seed = seed;
             this.now = now;
             this.items = items;
@@ -981,6 +985,8 @@ public class Bookmarket {
             this.addresses = addresses;
             this.authors = authors;
             this.orders = orders;
+            this.stocks = stocks;
+            this.evaluations = evaluations;
         }
 
         /**
@@ -992,7 +998,7 @@ public class Bookmarket {
         public Object executeOnBookstore(Stream<Bookstore> bookstore) {
             Bookstore.populate(seed, now, items, customers, addresses, authors);
             Random rand = new Random(seed);
-            bookstore.forEach(instance -> instance.populateInstanceBookstore(orders, rand, now));
+            bookstore.forEach(instance -> instance.populateInstanceBookstore(orders, stocks, evaluations, rand, now));
             return true;
         }
     }

@@ -248,7 +248,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Returns a customer by their username.
+    Returns a customer by their usernamex.
      */
     public static Optional<Customer> getCustomer(String username) {
         return Optional.ofNullable(customersByUsername.get(username));
@@ -527,6 +527,14 @@ public class Bookstore implements Serializable {
         return ordersById;
     }
 
+    
+    /**
+     Returns a random Order.
+     */
+    private Order getAOrderAnyOrder(Random random) {
+        return ordersById.get(random.nextInt(ordersById.size()));
+    }
+
     /**
      *
      * @param subject
@@ -756,7 +764,6 @@ public class Bookstore implements Serializable {
         populateCustomers(customers, rand, now);
         populateAuthorTable(authors, rand);
         populateBooks(items, rand);
-        populateEvaluation(rand);
         populated = true;
         System.out.println("Finished TPCW population.");
         return true;
@@ -966,10 +973,10 @@ public class Bookstore implements Serializable {
         System.out.println(" Done");
     }
 
-    void populateInstanceBookstore(int number, Random rand, long now) {
-        populateOrders(number, rand, now);
-        populateStocks(number, rand, now);
-
+    void populateInstanceBookstore(int orders, int stocks, int evaluations, Random rand, long now) {
+        populateOrders(orders, rand, now);
+        populateStocks(stocks, rand, now);
+        populateEvaluation(evaluations, rand);
     }
 
     private void populateStocks(int number, Random rand, long now) {
@@ -1042,9 +1049,33 @@ public class Bookstore implements Serializable {
         System.out.println(" Done");
     }
 
-    private static void populateEvaluation(Random rand) {
-        System.out.print("Creating evaluation...");
-        // to do
+    private void populateEvaluation(int number, Random rand) {
+        System.out.print("Creating " + number + " evaluations...");
+        
+        for (int i = 0; i < number; i++) {
+            if (i % 10000 == 0) {
+                System.out.print(".");
+            }
+            int idEvaluation = evaluationById.size();
+
+            Order order = getAOrderAnyOrder(rand);
+
+            Customer customer = order.getCustomer();
+
+            int bookIndex = TPCW_Util.getRandomInt(rand, 0, order.getLines().size() - 1);
+            Book book = order.getLines().get(bookIndex).getBook();
+
+            double rating = TPCW_Util.getRandomDouble(rand, 1, 5);
+
+            Evaluation evaluation = new Evaluation(
+                    idEvaluation,
+                    customer,
+                    book,
+                    rating
+            );
+            evaluationById.add(evaluation);
+        }
+
         System.out.println(" Done");
     }
 

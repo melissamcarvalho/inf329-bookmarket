@@ -34,7 +34,7 @@ public class BookMarketClient {
 		Bookmarket fleaMarket = new Bookmarket();
 		Bookmarket.init(100);
 
-		fleaMarket.populate(10000, 10000, 10000, 1000, 10000);
+		fleaMarket.populate(10000, 10000, 10000, 1000, 10000, 10000, 1000);
 		for (int i = 0; i < 100; i++) {
 			books.add(i, fleaMarket.getBook(i));
 			System.out.println(books.get(i).toString() + " " + books.get(i).getAuthor().toString());

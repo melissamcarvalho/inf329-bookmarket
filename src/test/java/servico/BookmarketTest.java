@@ -66,6 +66,8 @@ public class BookmarketTest {
         int addresses = 1000;
         int authors = 1000;
         int orders = 1000;
+        int stocks = 1000;
+        int evaluations = 100;
 
         Bookstore.populate(seed, now, items, customers, addresses, authors);
 
@@ -89,7 +91,7 @@ public class BookmarketTest {
         }
 
         Bookmarket.init(0, bookstores);
-        Bookmarket.populate(items, customers, addresses, authors, orders);
+        Bookmarket.populate(items, customers, addresses, authors, orders, stocks, evaluations);
 
         // Create a predictable sales scenario for best-seller testing
         List<Book> artBooks = Bookmarket.doSubjectSearch(SUBJECTS.ARTS);
