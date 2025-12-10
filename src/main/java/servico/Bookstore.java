@@ -117,7 +117,7 @@ public class Bookstore implements Serializable {
 
     private static final long serialVersionUID = -3099048826035606338L;
 
-    private final RecommendationEngine recommendationEngine;
+    private static RecommendationEngine recommendationEngine;
 
     private static boolean populated;
     private static final List<Country> countryById;
@@ -346,9 +346,16 @@ public class Bookstore implements Serializable {
     /**
      * Returns a list of recommended books based on users.
      */
-    public static List<Book> getRecommendationByUsers(int c_id) {
-        // to do
-       return null;
+    public static List<Book> getRecommendationByUsers(int customerId) {
+        List<Integer> recommended = recommendationEngine.recommendByUsers(customerId, 10);
+
+        List<Book> recommendedBooks = recommended.stream()
+            .map(Bookstore::getBook)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
+
+       return recommendedBooks;
     }
 
     /**
@@ -1080,6 +1087,7 @@ public class Bookstore implements Serializable {
             );
             evaluationById.add(evaluation);
         }
+        recommendationEngine.refreshModel(evaluationById);
 
         System.out.println(" Done");
     }

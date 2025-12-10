@@ -47,7 +47,7 @@ public class BookstoreTest {
         int authors = 100;
         int orders = 10000;
         int stocks = 10000;
-        int evaluations = 1000;
+        int evaluations = 10000;
         Random rand = new Random(seed);
         Bookstore.populate(seed, now, items, customers, addresses, authors);
         instance = new Bookstore(0);
@@ -284,6 +284,12 @@ public class BookstoreTest {
         //assertEquals(cost, book.getCost(), 0.0);
         assertEquals(image, book.getImage());
         assertEquals(thumbnail, book.getThumbnail());
+    }
+
+    @Test
+    public void recommend() {
+        List<Book> recommendations = instance.getRecommendationByUsers(683);
+        assertEquals(recommendations.size(), 5);
     }
 
    
