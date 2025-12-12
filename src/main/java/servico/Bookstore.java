@@ -1066,7 +1066,7 @@ public class Bookstore implements Serializable {
             Book book = order.getLines().get(bookIndex).getBook();
 
             int idEvaluation = evaluationById.size();
-            double rating = TPCW_Util.getRandomDouble(rand, 1, 5);
+            double rating = TPCW_Util.getRandomDouble(rand, 0, 4);
 
             Evaluation evaluation = new Evaluation(
                     idEvaluation,
