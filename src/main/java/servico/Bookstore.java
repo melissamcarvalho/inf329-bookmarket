@@ -539,21 +539,11 @@ public class Bookstore implements Serializable {
         return ordersById;
     }
 
-    
-    /**
-     Returns a random Order.
-     */
-    private Order getAOrderAnyOrder(Random random) {
-        return ordersById.get(random.nextInt(ordersById.size()));
-    }
-
     /**
      *
      * @param subject
      * @return
      */
-    
-
     private static Book createBook(String title, Date pubDate, String publisher,
             SUBJECTS subject, String desc, String thumbnail,
             String image, double srp, Date avail, String isbn,
@@ -1068,15 +1058,14 @@ public class Bookstore implements Serializable {
             if (i % 10000 == 0) {
                 System.out.print(".");
             }
-            int idEvaluation = evaluationById.size();
-
-            Order order = getAOrderAnyOrder(rand);
+            Order order = this.getOrdersById().get(i);
 
             Customer customer = order.getCustomer();
 
             int bookIndex = TPCW_Util.getRandomInt(rand, 0, order.getLines().size() - 1);
             Book book = order.getLines().get(bookIndex).getBook();
 
+            int idEvaluation = evaluationById.size();
             double rating = TPCW_Util.getRandomDouble(rand, 1, 5);
 
             Evaluation evaluation = new Evaluation(

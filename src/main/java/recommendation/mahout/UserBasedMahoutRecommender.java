@@ -15,6 +15,7 @@ import org.apache.mahout.cf.taste.impl.similarity.EuclideanDistanceSimilarity;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
 
@@ -148,17 +149,8 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
             throw new RuntimeException("Error while recommending books", e);
         }
 
-        List<Integer> recommendedBooks = new java.util.ArrayList<>();
-        if (recommendations.isEmpty()) {
-            System.out.println("  No recommendations found!");
-        } else {
-            System.out.println("  Found " + recommendations.size() + " recommendations:");
-            for (int i = 0; i < recommendations.size(); i++) {
-                RecommendedItem recommendation = recommendations.get(i);
-                long item_id = recommendation.getItemID();
-                recommendedBooks.add((int) item_id);
-            }
-        }
-        return recommendedBooks;
+       return recommendations.stream()
+               .map(recommendation -> (int) recommendation.getItemID())
+               .collect(Collectors.toList());
     }
 }

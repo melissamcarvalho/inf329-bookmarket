@@ -68,13 +68,13 @@ public class RecommendationEngine {
         FastByIDMap<PreferenceArray> userData =  new FastByIDMap<>();
         evaluationsByCustomer.forEach((customer, customerEvaluations) -> {
             PreferenceArray customerPreferences = new GenericUserPreferenceArray(customerEvaluations.size());
-            customerPreferences.setUserID(0, customer.getId());
 
             AtomicInteger preferenceIndex = new AtomicInteger();
             customerEvaluations.forEach(evaluation -> {
                 int index = preferenceIndex.get();
                 customerPreferences.setItemID(index, evaluation.getBook().getId());
-                customerPreferences.setValue(index, 5.0f);
+                customerPreferences.setValue(index, (float) evaluation.getRating());
+                customerPreferences.setUserID(index, customer.getId());
 
                 preferenceIndex.getAndIncrement();
             });
