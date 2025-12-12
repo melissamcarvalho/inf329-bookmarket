@@ -70,6 +70,8 @@ import dominio.*;
 import recommendation.RecommendationEngine;
 import recommendation.RecommendationSettings;
 import util.TPCW_Util;
+
+import javax.swing.text.html.Option;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -747,7 +749,44 @@ public class Bookstore implements Serializable {
         return order;
     }
 
+    /**
+     *
+     * @param costumerId
+     * @param bookId
+     * @param rating
+     */
+    public Evaluation createEvaluation(int costumerId, int bookId, double rating) {
+        int evalId = evaluationById.size();
+        Customer customer = customersById.get(costumerId);
+        Book book = booksById.get(bookId);
 
+        Evaluation eval = new Evaluation(evalId, customer, book, rating);
+        evaluationById.add(eval);
+        return eval;
+    }
+
+    public Optional<Evaluation> updateEvaluation(int evaluationId, double rating) {
+        Evaluation eval;
+
+        try {
+            eval = evaluationById.get(evaluationId);
+        } catch (IndexOutOfBoundsException e) {
+            return Optional.empty();
+        }
+
+        eval.setRating(rating);
+        return Optional.of(eval);
+    }
+
+    public Optional<Evaluation> getEvaluation(int id) {
+        Evaluation eval = null;
+        try {
+            eval = evaluationById.get(id);
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("getEvaluation: there is no evaluation for the defined id");
+        }
+        return Optional.ofNullable(eval);
+    }
 
     private static Random rand;
 

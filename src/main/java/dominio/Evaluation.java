@@ -27,6 +27,12 @@ public class Evaluation {
     }
 
     /**
+     *
+     * @return
+     */
+    public int getId() { return this.id; }
+
+    /**
      * Get Costumer assigned to the evaluation
      * @return Costumer reference
      */
