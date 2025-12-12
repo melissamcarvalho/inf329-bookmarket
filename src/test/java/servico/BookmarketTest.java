@@ -155,7 +155,6 @@ public class BookmarketTest {
         assertEquals( rating, eval.getRating(), 0.01 );
     }
 
-    @After
     @Test
     public void testUpdateEvaluation() {
         System.out.println("testUpdateEvaluation");
