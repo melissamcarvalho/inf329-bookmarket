@@ -4,6 +4,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -278,7 +285,7 @@ public class Bookmarket {
 
     /**
      *
-     * Retorna uma map na qual: (1) as "chaves da map" (keys) são os 50 livros
+     * Retorna uma map na qual: (1) as "chaves da map" (keys) são os 100 livros
      * mais vendidos de um determinado assunto (subject) de todas as Bookstores
      * e (2) "os valores da map" (values) são conjuntos (set) de estoques
      * (Stock) do livro da key, ordenados de forma crescente por valor de cost
@@ -287,6 +294,30 @@ public class Bookmarket {
      * @return
      */
     public static Map<Book, Set<Stock>> getBestSellers(SUBJECTS subject) {
+        return getBestSellers(subject, 100);
+    }
+
+    /**
+     * Retorna uma map na qual: (1) as "chaves da map" (keys) são os 'limit' livros
+     * mais vendidos de um determinado assunto (subject) de todas as Bookstores
+     * e (2) "os valores da map" (values) são conjuntos (set) de estoques
+     * (Stock) do livro da key, ordenados de forma crescente por valor de cost
+     * 
+     * @param subject
+     * @param limit
+     * @return
+     */
+    public static Map<Book, Set<Stock>> getBestSellers(SUBJECTS subject, int limit) {
+        if(subject == null){
+            throw new IllegalArgumentException("Subject cannot be null");
+        }
+        if(limit <= 0){
+            throw new IllegalArgumentException("Limit must be greater than zero");
+        }
+        if(limit > 100) {
+            throw new IllegalArgumentException("Limit cannot be greater than 100");
+        }
+
         Map<Book, Integer> aggregateSales = new HashMap<>();
 
         // Aggregate sales data from all bookstores
@@ -299,8 +330,8 @@ public class Bookmarket {
         List<Book> topBooks = new ArrayList<>(aggregateSales.keySet());
         topBooks.sort((b1, b2) -> aggregateSales.get(b2).compareTo(aggregateSales.get(b1)));
 
-        // Limit to the top 50
-        List<Book> bestSellers = topBooks.subList(0, Math.min(50, topBooks.size()));
+        // Limit to the top 'limit' books
+        List<Book> bestSellers = topBooks.subList(0, Math.min(limit, topBooks.size()));
 
         // For each top book, get all its stocks sorted by cost
         Map<Book, Set<Stock>> result = new LinkedHashMap<>();

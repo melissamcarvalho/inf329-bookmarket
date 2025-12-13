@@ -520,7 +520,7 @@ public class Bookstore implements Serializable {
 
         // Iterate through all orders to find sales of books of the given subject
         ordersByCreation.stream()
-            .filter(order -> !order.isDenined())
+            .filter(order -> order.isShipped())
             .forEach(order -> { 
                 order.getLines().stream()
                     .filter(line -> line.getBook().getSubject().equals(subject))
