@@ -119,13 +119,13 @@ public class BookmarketTest {
      */
     @Test
     public void testGetBestSellers() {
-        System.out.println("getBestSellers");
         SUBJECTS subject = SUBJECTS.ARTS;
-        Map<Book, Set<Stock>> result = Bookmarket.getBestSellers(subject);
+        int limit = 10;
+        Map<Book, Set<Stock>> result = Bookmarket.getBestSellers(subject, limit);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
-        assertTrue(result.size() <= 50);
+        assertTrue(result.size() <= limit);
 
         // Check the first book is the one we sold the most
         Book firstBook = result.keySet().iterator().next();
