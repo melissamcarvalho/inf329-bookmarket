@@ -1,10 +1,8 @@
 package servico;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import dominio.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -15,17 +13,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import dominio.Book;
-import dominio.Cart;
-import dominio.CreditCards;
-import dominio.Customer;
-import dominio.SUBJECTS;
-import dominio.ShipTypes;
-import dominio.StatusTypes;
-import dominio.Stock;
 import recommendation.RecommendationSettings;
-import dominio.Order;
-import java.util.HashMap;
+import util.TPCW_Util;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import static org.junit.Assert.*;
@@ -35,6 +25,9 @@ import static org.junit.Assert.*;
  * @author INF329
  */
 public class BookmarketTest {
+
+    long seed = 0;
+    Bookstore[] bookstores;
 
     private Book topSellerBook;
     private Book secondSellerBook;
@@ -59,7 +52,6 @@ public class BookmarketTest {
      * assim o funcionamento correto dos métodos do bestseller.
      */
     public void setUp() {
-        long seed = 0;
         long now = System.currentTimeMillis();
 
         int items = 500;
@@ -72,7 +64,7 @@ public class BookmarketTest {
 
         Bookstore.populate(seed, now, items, customers, addresses, authors);
 
-        Bookstore[] bookstores = new Bookstore[5];
+        bookstores = new Bookstore[5];
 
         for (int i = 0; i < 5; i++) {
             Bookstore bookstore = new Bookstore(i);
@@ -142,6 +134,46 @@ public class BookmarketTest {
             assertTrue(stock.getCost() >= lastCost);
             lastCost = stock.getCost();
         }
+    }
+
+    @Test
+    public void testCreateEvaluation() {
+        System.out.println("testCreateEvaluation");
+
+        Random rand = new Random(seed);
+
+        int storeId = bookstores[0].getId();
+        Customer customer = Bookstore.getCustomer(1);
+        Book book = Bookstore.getABookAnyBook(rand);
+        double rating = TPCW_Util.getRandomDouble(rand, 0, 4);
+
+        Evaluation eval = Bookmarket.createEvaluation(storeId, customer.getId(), book.getId(), rating);
+
+        assertNotNull(eval);
+        assertEquals( customer, eval.getCustomer() );
+        assertEquals( book, eval.getBook() );
+        assertEquals( rating, eval.getRating(), 0.01 );
+    }
+
+    @Test
+    public void testUpdateEvaluation() {
+        System.out.println("testUpdateEvaluation");
+
+        Random rand = new Random(seed);
+
+        Optional<Evaluation> eval = bookstores[0].getEvaluation(0);
+        assertNotNull(eval);
+
+        int id = eval.get().getId();
+        double rating = TPCW_Util.getRandomDouble(rand, 0, 4);
+
+        Evaluation eval2 = Bookmarket.updateEvaluation(bookstores[0].getId(), id, rating);
+        assertNotNull(eval2);
+        assertEquals( eval.get(), eval2 );
+        assertEquals( eval.get().getCustomer(), eval2.getCustomer() );
+        assertEquals( eval.get().getBook(), eval2.getBook() );
+        assertEquals( rating, eval2.getRating(), 0.01 );
+
     }
 
     /**

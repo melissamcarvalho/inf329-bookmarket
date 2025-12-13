@@ -1,9 +1,8 @@
 package servico;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -15,16 +14,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import dominio.Address;
-import dominio.Book;
-import dominio.Cart;
-import dominio.CreditCards;
-import dominio.Customer;
-import dominio.Order;
-import dominio.SUBJECTS;
-import dominio.ShipTypes;
-import dominio.StatusTypes;
-import dominio.Stock;
+import dominio.*;
 import util.TPCW_Util;
 
 import recommendation.RecommendationSettings;
@@ -628,6 +618,26 @@ public class Bookmarket {
                 city, state, zip, country, StatusTypes.PENDING);
     }
 
+    public static Evaluation createEvaluation(int storeId, int customerId, int bookId, double rating) {
+        try {
+            return (Evaluation) stateMachine.execute(
+                    new CreateEvaluationAction(storeId, customerId, bookId, rating)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Evaluation updateEvaluation(int storeId, int evaluationId, double rating) {
+        try {
+            return (Evaluation) stateMachine.execute(
+                    new UpdateEvaluationAction(storeId, evaluationId, rating)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static String randomComment() {
         return TPCW_Util.getRandomString(random, 20, 100);
     }
@@ -976,6 +986,72 @@ public class Bookmarket {
             return bookstore.filter(bs -> bs.getId() == this.storeId).findFirst().get().confirmBuy(customerId, cartId, comment, ccType,
                     ccNumber, ccName, ccExpiry, shipping, shippingDate,
                     addressId, now, status);
+        }
+    }
+
+    protected static class CreateEvaluationAction extends BookstoreAction {
+
+        @Serial
+        private static final long serialVersionUID = -5034397912762417088L;
+
+        int customerId;
+        int bookId;
+        int storeId;
+        double rating;
+
+        /**
+         *
+         * @param storeId
+         * @param customerId
+         * @param bookId
+         * @param rating
+         */
+        public CreateEvaluationAction(int storeId, int customerId, int bookId, double rating) {
+            this.storeId = storeId;
+            this.customerId = customerId;
+            this.bookId = bookId;
+            this.rating = rating;
+        }
+
+        @Override
+        public Object executeOnBookstore(Stream<Bookstore> bookstore) {
+            return bookstore
+                    .filter(bs -> bs.getId() == this.storeId)
+                    .findFirst()
+                    .get()
+                    .createEvaluation(this.customerId, this.bookId, this.rating);
+        }
+    }
+
+    protected static class UpdateEvaluationAction extends BookstoreAction {
+
+        @Serial
+        private static final long serialVersionUID = -3526897466225576356L;
+
+        int storeId;
+        int evaluationId;
+        double rating;
+
+        /**
+         *
+         * @param storeId
+         * @param evaluationId
+         * @param rating
+         */
+        public UpdateEvaluationAction(int storeId, int evaluationId, double rating) {
+            this.storeId = storeId;
+            this.evaluationId = evaluationId;
+            this.rating = rating;
+        }
+
+        @Override
+        public Object executeOnBookstore(Stream<Bookstore> bookstore) {
+            return bookstore
+                    .filter(bs -> bs.getId() == this.storeId)
+                    .findFirst()
+                    .get()
+                    .updateEvaluation(evaluationId, rating)
+                    .get();
         }
     }
 
