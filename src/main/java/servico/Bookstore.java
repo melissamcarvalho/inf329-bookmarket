@@ -68,6 +68,7 @@ import dominio.StatusTypes;
 import dominio.Stock;
 import dominio.*;
 import recommendation.RecommendationEngine;
+import recommendation.RecommendationSettings;
 import util.TPCW_Util;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -116,7 +117,7 @@ public class Bookstore implements Serializable {
 
     private static final long serialVersionUID = -3099048826035606338L;
 
-    private final RecommendationEngine recommendationEngine;
+    private static RecommendationEngine recommendationEngine;
 
     private static boolean populated;
     private static final List<Country> countryById;
@@ -157,7 +158,11 @@ public class Bookstore implements Serializable {
         ordersByCreation = new LinkedList<>();
         stockByBook = new HashMap<>();
 
-        recommendationEngine = new RecommendationEngine(evaluationById);
+        recommendationEngine = new RecommendationEngine(evaluationById, new RecommendationSettings());
+    }
+
+    public void setSettings(final RecommendationSettings settings) {
+        this.recommendationEngine.setSettings(settings);
     }
 
     /**
@@ -248,7 +253,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Returns a customer by their username.
+    Returns a customer by their usernamex.
      */
     public static Optional<Customer> getCustomer(String username) {
         return Optional.ofNullable(customersByUsername.get(username));
@@ -341,9 +346,16 @@ public class Bookstore implements Serializable {
     /**
      * Returns a list of recommended books based on users.
      */
-    public static List<Book> getRecommendationByUsers(int c_id) {
-        // to do
-       return null;
+    public static List<Book> getRecommendationByUsers(int customerId) {
+        List<Integer> recommended = recommendationEngine.recommendByUsers(customerId, 10);
+
+        List<Book> recommendedBooks = recommended.stream()
+            .map(Bookstore::getBook)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
+
+       return recommendedBooks;
     }
 
     /**
@@ -532,8 +544,6 @@ public class Bookstore implements Serializable {
      * @param subject
      * @return
      */
-    
-
     private static Book createBook(String title, Date pubDate, String publisher,
             SUBJECTS subject, String desc, String thumbnail,
             String image, double srp, Date avail, String isbn,
@@ -756,7 +766,6 @@ public class Bookstore implements Serializable {
         populateCustomers(customers, rand, now);
         populateAuthorTable(authors, rand);
         populateBooks(items, rand);
-        populateEvaluation(rand);
         populated = true;
         System.out.println("Finished TPCW population.");
         return true;
@@ -966,10 +975,10 @@ public class Bookstore implements Serializable {
         System.out.println(" Done");
     }
 
-    void populateInstanceBookstore(int number, Random rand, long now) {
-        populateOrders(number, rand, now);
-        populateStocks(number, rand, now);
-
+    void populateInstanceBookstore(int orders, int stocks, int evaluations, Random rand, long now) {
+        populateOrders(orders, rand, now);
+        populateStocks(stocks, rand, now);
+        populateEvaluation(evaluations, rand);
     }
 
     private void populateStocks(int number, Random rand, long now) {
@@ -1042,9 +1051,33 @@ public class Bookstore implements Serializable {
         System.out.println(" Done");
     }
 
-    private static void populateEvaluation(Random rand) {
-        System.out.print("Creating evaluation...");
-        // to do
+    private void populateEvaluation(int number, Random rand) {
+        System.out.print("Creating " + number + " evaluations...");
+        
+        for (int i = 0; i < number; i++) {
+            if (i % 10000 == 0) {
+                System.out.print(".");
+            }
+            Order order = this.getOrdersById().get(i);
+
+            Customer customer = order.getCustomer();
+
+            int bookIndex = TPCW_Util.getRandomInt(rand, 0, order.getLines().size() - 1);
+            Book book = order.getLines().get(bookIndex).getBook();
+
+            int idEvaluation = evaluationById.size();
+            double rating = TPCW_Util.getRandomDouble(rand, 0, 4);
+
+            Evaluation evaluation = new Evaluation(
+                    idEvaluation,
+                    customer,
+                    book,
+                    rating
+            );
+            evaluationById.add(evaluation);
+        }
+        recommendationEngine.refreshModel(evaluationById);
+
         System.out.println(" Done");
     }
 

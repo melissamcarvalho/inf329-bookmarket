@@ -1,10 +1,8 @@
 package servico;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
+import dominio.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -12,17 +10,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import dominio.Address;
-import dominio.Author;
-import dominio.Book;
-import dominio.Cart;
-import dominio.CreditCards;
-import dominio.Customer;
-import dominio.SUBJECTS;
-import dominio.ShipTypes;
-import dominio.StatusTypes;
-import dominio.Order;
-import java.util.Arrays;
 import static org.junit.Assert.*;
 
 /**
@@ -41,15 +28,17 @@ public class BookstoreTest {
         
         long seed = 0;
         long now = System.currentTimeMillis();
-        int items = 10000;
-        int customers = 1000;
+        int items = 1000;
+        int customers = 100;
         int addresses = 1000;
         int authors = 100;
         int orders = 10000;
+        int stocks = 10000;
+        int evaluations = 10000;
         Random rand = new Random(seed);
         Bookstore.populate(seed, now, items, customers, addresses, authors);
         instance = new Bookstore(0);
-        instance.populateInstanceBookstore(orders, rand, now);
+        instance.populateInstanceBookstore(orders, stocks, evaluations, rand, now);
     }
 
     @AfterClass
@@ -284,5 +273,46 @@ public class BookstoreTest {
         assertEquals(thumbnail, book.getThumbnail());
     }
 
-   
+    @Test
+    public void customerRecommendation() {
+        List<Book> recommendations = instance.getRecommendationByUsers(79);
+
+        assertEquals(recommendations.size(), 10);
+    }
+
+    @Test
+    public void debugRecommendation() {
+        Map<Book, List<Customer>> booksBuyers = new HashMap<>();
+        instance.getOrdersById().forEach((order) -> {
+            order.getLines().forEach((line) -> {
+                Book book = line.getBook();
+                if(!booksBuyers.containsKey(book)) {
+                    booksBuyers.put(book, new ArrayList<>());
+                }
+
+
+                List<Customer> buyers = booksBuyers.get(book);
+                Customer customer = order.getCustomer();
+                if(!buyers.contains(customer)) {
+                    buyers.add(customer);
+                }
+            });
+        });
+
+        Book randomBook = booksBuyers.keySet().stream().findFirst().get();
+        List<Customer> buyers = booksBuyers.get(randomBook);
+
+        Map<Customer, List<Book>> recommendedBooks = new HashMap<>();
+        buyers.forEach(buyer -> {
+            List<Book> recommendations = instance.getRecommendationByUsers(buyer.getId());
+
+            recommendedBooks.put(buyer, recommendations);
+        });
+
+        recommendedBooks.clear();
+    }
+
+
+
+
 }

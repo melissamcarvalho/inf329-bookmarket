@@ -27,6 +27,8 @@ import dominio.StatusTypes;
 import dominio.Stock;
 import util.TPCW_Util;
 
+import recommendation.RecommendationSettings;
+
 /**
  * The {@code Bookmarket} class serves as the main service layer and entry point for the Bookmarket system.
  * <p>
@@ -76,11 +78,12 @@ public class Bookmarket {
         void checkpoint() {
 
         }
+
         List<Bookstore> getState() {
             return state;
         }
 
-        Stream getStateStream() {
+        Stream<Bookstore> getStateStream() {
             return state.stream();
         }
 
@@ -106,13 +109,17 @@ public class Bookmarket {
      *
      * @param state
      */
-    public static void init(int seed, Bookstore... state) {
+    public static void init(int seed, final RecommendationSettings settings, Bookstore... state) {
         random = new Random(seed);
         try {
             stateMachine = StateMachine.create(state);
         } catch (UmbrellaException e) {
             throw new RuntimeException(e);
         }
+        
+        stateMachine.getStateStream().forEach(
+            store -> store.setSettings(settings)
+        );
     }
 
     private static Stream<Bookstore> getBookstoreStream() {
@@ -636,14 +643,16 @@ public class Bookmarket {
      * @param addresses
      * @param authors
      * @param orders
+     * @param stocks
+     * @param evaluations
      * @return
      */
     public static boolean populate(int items, int customers, int addresses,
-            int authors, int orders) {
+            int authors, int orders, int stocks, int evaluations) {
         try {
             return (Boolean) stateMachine.execute(new PopulateAction(random.nextLong(),
                     System.currentTimeMillis(), items, customers, addresses,
-                    authors, orders));
+                    authors, orders, stocks, evaluations));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -984,6 +993,8 @@ public class Bookmarket {
         int addresses;
         int authors;
         int orders;
+        int stocks;
+        int evaluations;
 
         /**
          *
@@ -996,7 +1007,7 @@ public class Bookmarket {
          * @param orders
          */
         public PopulateAction(long seed, long now, int items, int customers,
-                int addresses, int authors, int orders) {
+                int addresses, int authors, int orders, int stocks, int evaluations) {
             this.seed = seed;
             this.now = now;
             this.items = items;
@@ -1004,6 +1015,8 @@ public class Bookmarket {
             this.addresses = addresses;
             this.authors = authors;
             this.orders = orders;
+            this.stocks = stocks;
+            this.evaluations = evaluations;
         }
 
         /**
@@ -1015,7 +1028,7 @@ public class Bookmarket {
         public Object executeOnBookstore(Stream<Bookstore> bookstore) {
             Bookstore.populate(seed, now, items, customers, addresses, authors);
             Random rand = new Random(seed);
-            bookstore.forEach(instance -> instance.populateInstanceBookstore(orders, rand, now));
+            bookstore.forEach(instance -> instance.populateInstanceBookstore(orders, stocks, evaluations, rand, now));
             return true;
         }
     }
