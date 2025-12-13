@@ -1,6 +1,5 @@
 package servico;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Date;
@@ -991,7 +990,6 @@ public class Bookmarket {
 
     protected static class CreateEvaluationAction extends BookstoreAction {
 
-        @Serial
         private static final long serialVersionUID = -5034397912762417088L;
 
         int customerId;
@@ -1025,7 +1023,6 @@ public class Bookmarket {
 
     protected static class UpdateEvaluationAction extends BookstoreAction {
 
-        @Serial
         private static final long serialVersionUID = -3526897466225576356L;
 
         int storeId;
