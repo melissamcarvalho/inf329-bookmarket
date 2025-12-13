@@ -5,6 +5,10 @@ import servico.Bookstore;
 
 import dominio.Book;
 
+import recommendation.RecommendationCorrelationSimilarity;
+import recommendation.RecommendationSettings;
+import recommendation.RecommendationUserSimilarity;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.lang.System;
@@ -31,10 +35,16 @@ public class BookMarketClient {
 	public static void main(String[] args) {
 		ArrayList<Book> books = new ArrayList<Book>();
 
-		Bookmarket fleaMarket = new Bookmarket();
-		Bookmarket.init(100);
+		RecommendationSettings settings = new RecommendationSettings(
+			RecommendationCorrelationSimilarity.pearson,
+			RecommendationUserSimilarity.nearestUserNeighborhood,
+			2
+		);
 
-		fleaMarket.populate(10000, 10000, 10000, 1000, 10000);
+		Bookmarket fleaMarket = new Bookmarket();
+		Bookmarket.init(100, settings);
+
+		fleaMarket.populate(10000, 10000, 10000, 1000, 10000, 10000, 1000);
 		for (int i = 0; i < 100; i++) {
 			books.add(i, fleaMarket.getBook(i));
 			System.out.println(books.get(i).toString() + " " + books.get(i).getAuthor().toString());
