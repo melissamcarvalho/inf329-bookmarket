@@ -10,24 +10,28 @@ public class BookTest {
     private Book book;
     private Author author;
     private Date now;
+    private Date pubDate;
+    private Date availDate;
     private int[] dims = {10, 15, 2};
 
     @Before
     public void setUp() {
         now = new Date();
+        pubDate = new Date();
+        availDate = new Date(pubDate.getTime() + 86400000); // Amanhã
         author = new Author("John", "D.", "Doe", now, "Bio text");
 
         // Criando a instância principal
         book = new Book(
-                1, "Java Programming", now, "Tech Press",
+                1, "Java Programming", pubDate, "Tech Press",
                 SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
-                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                49.90, availDate, "123456789", 500, BACKINGS.HARDBACK,
                 dims, 1.2, author
         );
     }
 
     @Test
-    public void testGettersAndConstructor() {
+    public void testGetters() {
         assertEquals(1, book.getId());
         assertEquals("Java Programming", book.getTitle());
         assertEquals("Tech Press", book.getPublisher());
@@ -88,13 +92,201 @@ public class BookTest {
         assertNotEquals("Livros com IDs diferentes devem ser diferentes", book, bookDifferentId);
 
         // Teste de HashCode
-        assertEquals("HashCodes devem ser iguais para IDs iguais",
-                book.hashCode(), bookSameId.hashCode());
+        assertEquals("HashCodes devem ser iguais para IDs iguais", book.hashCode(), bookSameId.hashCode());
     }
 
     @Test
     public void testToString() {
         String expected = "Book{id=1}";
         assertEquals(expected, book.toString());
+    }
+
+    @Test
+    public void testConstructorShouldFailWithNegativePrice() {
+        Book bookMalformed = new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, -1.0, author
+        );
+
+        assertTrue(bookMalformed.getSrp() >= 0);
+    }
+
+    @Test
+    public void testConstructorShouldFailWithNegativeWeight() {
+        Book bookMalformed = new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                -49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+
+        assertTrue(bookMalformed.getWeight() >= 0);
+    }
+
+    @Test
+    public void testConstructorShouldFailWithPageCount() {
+        Book bookMalformed = new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", -1, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+
+        assertTrue(bookMalformed.getPage() >= 0);
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullAuthor() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.2, null
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullDimensions() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                null, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullBackings() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, null,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullISBN() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, null, 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullAvailability() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, null, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullImage() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", null,
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullThumbnail() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", null, "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullDescription() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, null, "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullSubject() {
+        new Book(
+                1, "Java Programming", now, "Tech Press",
+                null, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullPublisher() {
+        new Book(
+                1, "Java Programming", now, null,
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullPublishDate() {
+        new Book(
+                1, "Java Programming", null, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullTitle() {
+        new Book(
+                1, null, now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNegativeId() {
+        new Book(
+                -1, "Java Programming", now, "Tech Press",
+                SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
+                49.90, now, "123456789", 500, BACKINGS.HARDBACK,
+                dims, 1.0, author
+        );
+    }
+
+    @Test
+    public void testConstructorShouldNotBeAffectedByExternalDateMutation() {
+        long originalTime = pubDate.getTime();
+
+        // Tentativa de sabotagem externa: alterando o objeto Date original
+        pubDate.setTime(0);
+
+        assertEquals("VULNERABILIDADE: O estado interno do Book foi alterado através da referência externa no construtor!",
+                originalTime, book.getPubDate().getTime());
+    }
+
+    @Test
+    public void testGetterShouldNotReturnMutableReference() {
+        Date returnedDate = book.getPubDate();
+        long originalTime = returnedDate.getTime();
+
+        // Tentativa de sabotagem via Getter: alterando o objeto retornado
+        returnedDate.setTime(0);
+
+        assertEquals("VULNERABILIDADE: O estado interno do Book foi alterado através da referência retornada pelo Getter!",
+                originalTime, book.getPubDate().getTime());
     }
 }
