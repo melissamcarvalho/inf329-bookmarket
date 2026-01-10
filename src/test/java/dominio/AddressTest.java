@@ -52,7 +52,7 @@ public class AddressTest {
         assertEquals("Deveriam ser iguais", endereco, enderecoIgual);
         assertNotEquals("Deveriam ser diferentes", endereco, enderecoDiferente);
         assertNotEquals("Não deve ser igual a nulo", null, endereco);
-        assertNotEquals("Não deve ser igual a um objeto de outra classe", "String", endereco);
+        assertNotEquals("Não deve ser igual a um objeto de outra classe", enderecoDiferente, enderecoIgual);
     }
 
     @Test
@@ -63,5 +63,96 @@ public class AddressTest {
 
         assertEquals("Objetos iguais devem ter o mesmo hashCode",
                 endereco.hashCode(), enderecoIgual.hashCode());
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullCountry() {
+        new Address(
+                100,
+                "Rua das Flores, 123",
+                "Apto 45",
+                "São Paulo",
+                "SP",
+                "01234-567",
+                null
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullZipCode() {
+        new Address(
+                100,
+                "Rua das Flores, 123",
+                "Apto 45",
+                "São Paulo",
+                "SP",
+                null,
+                brasil
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullState() {
+        new Address(
+                100,
+                "Rua das Flores, 123",
+                "Apto 45",
+                "São Paulo",
+                null,
+                "01234-567",
+                brasil
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullCity() {
+        new Address(
+                100,
+                "Rua das Flores, 123",
+                "Apto 45",
+                null,
+                "SP",
+                "01234-567",
+                brasil
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullStreet2() {
+        new Address(
+                100,
+                "Rua das Flores, 123",
+                null,
+                "São Paulo",
+                "SP",
+                "01234-567",
+                brasil
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullStreet1() {
+        new Address(
+                100,
+                null,
+                "Apto 45",
+                "São Paulo",
+                "SP",
+                "01234-567",
+                brasil
+        );
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNegativeId() {
+        new Address(
+                -1,
+                "Rua das Flores, 123",
+                "Apto 45",
+                "São Paulo",
+                "SP",
+                "01234-567",
+                brasil
+        );
     }
 }
