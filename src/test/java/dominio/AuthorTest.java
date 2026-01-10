@@ -34,29 +34,51 @@ public class AuthorTest {
     @Test
     public void testGetters() {
         // Verificando Strings
-        assertEquals("O primeiro nome deve ser Isaac", "Isaac", autor.getFname());
-        assertEquals("O nome do meio deve ser Yudick", "Yudick", autor.getMname());
-        assertEquals("O sobrenome deve ser Asimov", "Asimov", autor.getLname());
-        assertEquals("A biografia deve ser idêntica", biografia, autor.getBio());
+        assertEquals("Isaac", autor.getFname());
+        assertEquals("Yudick", autor.getMname());
+        assertEquals("Asimov", autor.getLname());
+        assertEquals(biografia, autor.getBio());
 
         // Verificando a Data
-        assertNotNull("A data de nascimento não deve ser nula", autor.getBirthdate());
-        assertEquals("A data de nascimento deve ser igual à informada",
-                dataNascimento.getTime(), autor.getBirthdate().getTime());
+        assertNotNull(autor.getBirthdate());
+        assertEquals(dataNascimento.getTime(), autor.getBirthdate().getTime());
     }
 
     @Test
-    public void testImutabilidadeBasica() {
-        // Como não existem setters e os campos são final,
-        // testamos se o objeto mantém o estado inicial após chamadas de métodos
-        String nomeInicial = autor.getFname();
-        assertEquals("Isaac", nomeInicial);
+    public void testDateMutationLeak() {
+        // java.util.Date é mutável. Se passarmos uma data e alterarmos ela fora...
+        Date dataOriginal = new Date();
+        Author author = new Author("Nome", "", "Sobrenome", dataOriginal, "Bio");
 
-        // Em Java, Date é mutável. Se a classe Author não fizer uma cópia defensiva,
-        // alterar a data fora pode alterar o objeto.
-        // Este teste verifica o comportamento atual da sua classe:
-        dataNascimento.setTime(0);
-        // Se a classe NÃO faz cópia defensiva, o teste abaixo passaria com 0.
-        // Se a classe FAZ cópia defensiva, autor.getBirthdate() continuaria com a data original.
+        long tempoOriginal = dataOriginal.getTime();
+        dataOriginal.setTime(0L); // Alterando a data externamente
+
+        assertEquals("VULNERABILIDADE: O objeto Author teve sua data alterada externamente (Falta de cópia defensiva)",
+                tempoOriginal, author.getBirthdate().getTime());
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullBio() {
+        new Author("Isaac","Yudick","Asimov", dataNascimento, null);
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullBirthdate() {
+        new Author("Isaac","Yudick","Asimov", null, biografia);
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullLastName() {
+        new Author("Isaac","Yudick",null, dataNascimento, biografia);
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullMiddleName() {
+        new Author("Isaac",null,"Asimov", dataNascimento, biografia);
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullFirstName() {
+        new Author(null,"Yudick","Asimov", dataNascimento, biografia);
     }
 }
