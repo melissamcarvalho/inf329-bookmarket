@@ -45,6 +45,7 @@ public class ItemBasedMahoutRecommender extends BaseMahoutRecommender {
             throw new IllegalStateException("RecommendationSettings is not set.");
         }
 
+        // Set Mahout similarity based on settings
         switch (this.getSettings().getCorrelationSimilarity()) {
             case pearson:
                 try {
@@ -65,6 +66,7 @@ public class ItemBasedMahoutRecommender extends BaseMahoutRecommender {
                         "Unsupported similarity metric: " + this.getSettings().getCorrelationSimilarity());
         }
 
+        // Create the ItemBasedRecommender
         this.mahoutItemRecommender = new GenericItemBasedRecommender(
                 this.getModel(),
                 this.mahoutSimilarity);
