@@ -28,10 +28,10 @@ public class ItemBasedMahoutRecommenderTest {
         // Create a simple data model with user preferences
         // All these users, have similar preferences, and the ONLY option is to
         // recommend what is MISSING
-        // User 1: items 1, 2, 3 ; rating 5, 5, 5
-        // User 2: items 1, 2, 4 ; rating 5, 5, 5
-        // User 3: items 2, 3, 4 ; rating 5, 5, 5
-        // User 4: items 1, 3, 4 ; rating 5, 5, 5
+        // User 1: items 1, 2, 3 ; rating 5, 5, 5; recommend 4
+        // User 2: items 1, 2, 4 ; rating 5, 5, 5; recommend 3
+        // User 3: items 2, 3, 4 ; rating 5, 5, 5; recommend 1
+        // User 4: items 1, 3, 4 ; rating 5, 5, 5; recommend 2
 
         PreferenceArray user1Prefs = new GenericUserPreferenceArray(3);
         user1Prefs.setUserID(0, 1);
