@@ -115,28 +115,35 @@ public class CartTest {
         assertEquals(totalEsperado, cart.total(customer), 0.001);
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void testIncreaseLineWithNegativeQuantity() {
-        // O código atual apenas soma: line.setQty(line.getQty() + quantity)
-        // Se quantity for -5, a quantidade no carrinho ficará negativa.
         cart.increaseLine(stockJava, -5);
-        CartLine line = cart.getLines().iterator().next();
-
-        assertTrue("BUG: Carrinho aceitou quantidade negativa!", line.getQty() >= 0);
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void testChangeLineWithNegativeQuantity() {
         cart.changeLine(stockJava, -10);
-        assertFalse("BUG: Linha deveria ter sido removida ou erro lançado para Qtd negativa",
-                cart.getLines().iterator().next().getQty() < 0);
     }
 
-    @Test
+    @Test(expected = Exception.class)
     public void testSubTotalWithDiscountOverOneHundred() {
-        cart.changeLine(stockJava, 1); // 50.0
-        // Se desconto for 110%, o subtotal será negativo?
-        double total = cart.subTotal(110.0);
-        assertTrue("BUG: Subtotal não pode ser negativo com descontos absurdos", total >= 0);
+        cart.changeLine(stockJava, 1);
+        cart.subTotal(110.0);
+    }
+
+    @Test(expected = Exception.class)
+    public void testSubTotalWithNegativeDiscount() {
+        cart.changeLine(stockJava, 1);
+        cart.subTotal(-1.0);
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNullTime() {
+        new Cart(1, null);
+    }
+
+    @Test(expected = Exception.class)
+    public void testConstructorShouldFailWithNegativeId() {
+        new Cart(-1, new Date());
     }
 }
