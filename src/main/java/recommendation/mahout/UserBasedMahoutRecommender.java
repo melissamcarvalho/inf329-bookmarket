@@ -3,7 +3,6 @@ package recommendation.mahout;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
-import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
@@ -23,13 +22,14 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
     private UserNeighborhood mahoutNeighborhood;
     private int mahoutNeighborhoodSize = -1;
     private UserBasedRecommender mahoutUserRecommender;
-    
+
     public UserBasedMahoutRecommender(RecommendationSettings settings, DataModel model) {
         super(settings, model);
     }
-    
+
     /**
      * Get the current similarity metric
+     * 
      * @return UserSimilarity instance
      */
     public UserSimilarity getMahoutSimilarity() {
@@ -38,6 +38,7 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
 
     /**
      * Get the current neighborhood
+     * 
      * @return UserNeighborhood instance
      */
     public UserNeighborhood getMahoutNeighborhood() {
@@ -46,6 +47,7 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
 
     /**
      * Get the current neighborhood size
+     * 
      * @return neighborhood size
      */
     public int getMahoutNeighborhoodSize() {
@@ -67,11 +69,11 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
         if (getModel() == null) {
             throw new IllegalStateException("DataModel is not set.");
         }
-        if(getSettings() == null) {
+        if (getSettings() == null) {
             throw new IllegalStateException("RecommendationSettings is not set.");
         }
 
-        switch(this.getSettings().getCorrelationSimilarity()) {
+        switch (this.getSettings().getCorrelationSimilarity()) {
             case pearson:
                 try {
                     this.mahoutSimilarity = new PearsonCorrelationSimilarity(getModel());
@@ -87,54 +89,55 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
                 }
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported similarity metric: " + this.getSettings().getCorrelationSimilarity());
+                throw new IllegalArgumentException(
+                        "Unsupported similarity metric: " + this.getSettings().getCorrelationSimilarity());
         }
 
-        switch(this.getSettings().getUserSimilarity()) {
+        switch (this.getSettings().getUserSimilarity()) {
             case nearestUserNeighborhood:
                 try {
                     this.mahoutNeighborhood = new NearestNUserNeighborhood(
                             this.mahoutNeighborhoodSize,
                             this.mahoutSimilarity,
-                            this.getModel()
-                    );
+                            this.getModel());
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to create NearestNUserNeighborhood", e);
                 }
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported user similarity: " + this.getSettings().getUserSimilarity());
+                throw new IllegalArgumentException(
+                        "Unsupported user similarity: " + this.getSettings().getUserSimilarity());
         }
 
         this.mahoutUserRecommender = new GenericUserBasedRecommender(
                 this.getModel(),
                 this.mahoutNeighborhood,
-                this.mahoutSimilarity
-        );
+                this.mahoutSimilarity);
     }
 
     /**
-     * Ensures both similarity and neighborhood are initialized with defaults if null
+     * Ensures both similarity and neighborhood are initialized with defaults if
+     * null
      */
     @Override
     protected void ensureMahoutInitialized() {
-        if(this.mahoutNeighborhoodSize == -1) {
+        if (this.mahoutNeighborhoodSize == -1) {
             this.mahoutNeighborhoodSize = this.getSettings().getNeighborhoodSize();
         }
-        if(this.mahoutSimilarity == null) {
+        if (this.mahoutSimilarity == null) {
             throw new IllegalStateException("Similarity is not set.");
         }
         if (this.mahoutNeighborhood == null) {
             throw new IllegalStateException("Neighborhood is not set.");
         }
-        if(this.mahoutUserRecommender == null) {
+        if (this.mahoutUserRecommender == null) {
             throw new IllegalStateException("UserBasedRecommender is not set.");
         }
     }
 
     /**
      * @param customerId Costumer ID
-     * @param count Count of recommendations to be returned
+     * @param count      Count of recommendations to be returned
      * @return List of recommended Books
      */
     @Override
@@ -149,8 +152,8 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
             throw new RuntimeException("Error while recommending books", e);
         }
 
-       return recommendations.stream()
-               .map(recommendation -> (int) recommendation.getItemID())
-               .collect(Collectors.toList());
+        return recommendations.stream()
+                .map(recommendation -> (int) recommendation.getItemID())
+                .collect(Collectors.toList());
     }
 }
