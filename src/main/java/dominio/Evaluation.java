@@ -10,19 +10,19 @@ public class Evaluation {
     private final int id;
     private final Customer customer;
     private final Book book;
-    private double rating;
+    private final double rating;
 
     /**
      * Evaluation class constructor
      * @param id Evaluation id number
-     * @param c Costumer class reference
-     * @param b Book class reference
+     * @param customer Costumer class reference
+     * @param book Book class reference
      * @param rating Book rating
      */
-    public Evaluation(final int id, Customer c, Book b, double rating) {
+    public Evaluation(final int id, Customer customer, Book book, double rating) {
         this.id = id;
-        this.customer = c;
-        this.book = b;
+        this.customer = customer;
+        this.book = book;
         this.rating = rating;
     }
 
@@ -56,11 +56,4 @@ public class Evaluation {
         return rating;
     }
 
-    /**
-     * Set rating to the evaluation
-     * @param rating
-     */
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
 }

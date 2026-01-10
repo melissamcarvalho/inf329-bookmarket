@@ -765,19 +765,6 @@ public class Bookstore implements Serializable {
         return eval;
     }
 
-    public Optional<Evaluation> updateEvaluation(int evaluationId, double rating) {
-        Evaluation eval;
-
-        try {
-            eval = evaluationById.get(evaluationId);
-        } catch (IndexOutOfBoundsException e) {
-            return Optional.empty();
-        }
-
-        eval.setRating(rating);
-        return Optional.of(eval);
-    }
-
     public Optional<Evaluation> getEvaluation(int id) {
         Evaluation eval = null;
         try {

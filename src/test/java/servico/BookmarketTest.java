@@ -155,27 +155,6 @@ public class BookmarketTest {
         assertEquals( rating, eval.getRating(), 0.01 );
     }
 
-    @Test
-    public void testUpdateEvaluation() {
-        System.out.println("testUpdateEvaluation");
-
-        Random rand = new Random(seed);
-
-        Optional<Evaluation> eval = bookstores[0].getEvaluation(0);
-        assertNotNull(eval);
-
-        int id = eval.get().getId();
-        double rating = TPCW_Util.getRandomDouble(rand, 0, 4);
-
-        Evaluation eval2 = Bookmarket.updateEvaluation(bookstores[0].getId(), id, rating);
-        assertNotNull(eval2);
-        assertEquals( eval.get(), eval2 );
-        assertEquals( eval.get().getCustomer(), eval2.getCustomer() );
-        assertEquals( eval.get().getBook(), eval2.getBook() );
-        assertEquals( rating, eval2.getRating(), 0.01 );
-
-    }
-
     /**
      * Test of getPriceBookRecommendationByUsers method, of class Bookmarket.
      */
