@@ -31,6 +31,6 @@ public class MahoutEvaluation extends Evaluation implements Preference {
 
     @Override
     public void setValue(float v) {
-        throw new UnsupportedOperationException("Evaluation doest not allow changes on value / rating.");
+        throw new UnsupportedOperationException("Evaluation does not allow changes on value / rating.");
     }
 }
