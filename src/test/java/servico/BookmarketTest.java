@@ -3,15 +3,12 @@ package servico;
 import java.util.*;
 
 import dominio.*;
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import recommendation.RecommendationSettings;
 import util.TPCW_Util;
@@ -77,7 +74,6 @@ public class BookmarketTest {
              */
             for (int j = 0; j < items; j++) {
                 bookstore.updateStock(j, 1);
-                //bookstore.updateStock(j, 1);
             }
 
             bookstores[i] = bookstore;
@@ -100,10 +96,6 @@ public class BookmarketTest {
         cart.increaseLine(bookstores[0].getStock(secondSellerBook.getId()), 50);
 
         Bookmarket.doBuyConfirm(bookstores[0].getId(), cartId, customer.getId(), CreditCards.AMEX, 123456789012345L, "Test User", new Date(), ShipTypes.AIR, StatusTypes.SHIPPED);
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
@@ -192,5 +184,83 @@ public class BookmarketTest {
     public void testGetStocksRecommendationByUsers() {
         System.out.println("getStocksRecommendationByUsers");
     }
+
+    // createNewCustomer
+    // getName
+    // getUserName
+    // getPassword
+    // getCustomer
+    // getMostRecentOrder
+    @Test
+    public void testCustomerOperations() {
+        Calendar.getInstance().set(2000, Calendar.NOVEMBER, 16, 0, 0, 0);
+        Date birthdate = Calendar.getInstance().getTime();
+
+        Customer customer = Bookmarket.createNewCustomer(
+                "First", "Last", "Street1", "Street2", "City",
+                "State", "123456-999", "Country", "11-1234-5678", "e@e.com",
+                birthdate, "Data");
+
+        assertNotNull("Customer should be not null", customer);
+
+        String[] name = Bookmarket.getName(customer.getId());
+        assertNotNull("Customer name should be not null", name);
+        assertEquals("Customer name string should have length of 3", 3, name.length);
+        assertFalse("Customer first name should not be empty", name[0].isEmpty());
+        assertEquals("Customer first name should match", "First", name[0]);
+        assertFalse("Customer middle name should not be empty", name[1].isEmpty());
+        assertEquals("Customer middle name should match", "Last", name[1]);
+        assertFalse("Customer last name should not be empty", name[2].isEmpty());
+        assertEquals("Customer last name should match", "OGBABABA", name[2]);
+
+        String username = Bookmarket.getUserName(customer.getId());
+        assertNotNull("Username should not be null", username);
+        assertFalse("Username should not be empty", username.isEmpty());
+
+        String password = Bookmarket.getPassword(username);
+        assertNotNull("Password should not be null", password);
+        assertFalse("Password should not be empty", password.isEmpty());
+
+        Customer other = Bookmarket.getCustomer(username);
+        assertNotNull("Other customer should not be null", other);
+        assertEquals("Customers should be equal", customer, other);
+
+        Order nullorder = Bookmarket.getMostRecentOrder(username);
+        assertNull("Most recent order should be null", nullorder);
+
+        Date now = new Date();
+        Cart cart = bookstores[0].createCart(new Date().getTime());
+        Address address = customer.getAddress();
+
+        Order order = bookstores[0].confirmBuy(
+                customer.getId(), cart.getId(), "Comment", CreditCards.VISA, 4444L,
+                "FIRST LAST", now, ShipTypes.AIR, now, address.getId(), now.getTime());
+
+        Order recentOrder = Bookmarket.getMostRecentOrder(username);
+        assertNotNull("Most recent order should not be null", recentOrder);
+        assertEquals("", order, recentOrder);
+    }
+
+    // getBook
+    // getABookAnyBook
+    // doSubjectSearch
+    // doTitleSearch
+    // doAuthorSearch
+    // getNewProducts
+    // getCosts
+    // getBestSellers
+    // getRecommendationByItems
+    // getRecommendationByUsers
+    // getStockRecommendationByUsers
+    // getStocks
+    // getStock
+    // getRelated
+    // adminUpdate
+    // createEmptyCart
+    // doCart
+    // getCart
+    // doBuyConfirm
+    // createEvaluation
+    // updateEvaluation
 
 }
