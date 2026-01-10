@@ -27,7 +27,7 @@ public class CartTest {
 
         // Setup de Stock (Assumindo que Stock recebe book, qty, cost e address)
         stockJava = new Stock(1, addr, bookJava, 100.0, 10);
-        stockSql = new Stock(2, addr, bookSql, 50.0, 5);
+        stockSql = new Stock(1, addr, bookSql, 50.0, 5);
 
         // Setup de Customer (Assumindo que tem um desconto de 10%)
         customer = new Customer(
@@ -113,5 +113,30 @@ public class CartTest {
 
         double totalEsperado = 101.425;
         assertEquals(totalEsperado, cart.total(customer), 0.001);
+    }
+
+    @Test
+    public void testIncreaseLineWithNegativeQuantity() {
+        // O código atual apenas soma: line.setQty(line.getQty() + quantity)
+        // Se quantity for -5, a quantidade no carrinho ficará negativa.
+        cart.increaseLine(stockJava, -5);
+        CartLine line = cart.getLines().iterator().next();
+
+        assertTrue("BUG: Carrinho aceitou quantidade negativa!", line.getQty() >= 0);
+    }
+
+    @Test
+    public void testChangeLineWithNegativeQuantity() {
+        cart.changeLine(stockJava, -10);
+        assertFalse("BUG: Linha deveria ter sido removida ou erro lançado para Qtd negativa",
+                cart.getLines().iterator().next().getQty() < 0);
+    }
+
+    @Test
+    public void testSubTotalWithDiscountOverOneHundred() {
+        cart.changeLine(stockJava, 1); // 50.0
+        // Se desconto for 110%, o subtotal será negativo?
+        double total = cart.subTotal(110.0);
+        assertTrue("BUG: Subtotal não pode ser negativo com descontos absurdos", total >= 0);
     }
 }
