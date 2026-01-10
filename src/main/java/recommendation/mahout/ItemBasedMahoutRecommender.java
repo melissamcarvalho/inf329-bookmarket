@@ -37,8 +37,6 @@ public class ItemBasedMahoutRecommender extends BaseMahoutRecommender {
      */
     @Override
     protected void updateMahoutComponents() {
-        this.mahoutSimilarity = null;
-        this.mahoutItemRecommender = null;
 
         if (getModel() == null) {
             throw new IllegalStateException("DataModel is not set.");
@@ -73,27 +71,12 @@ public class ItemBasedMahoutRecommender extends BaseMahoutRecommender {
     }
 
     /**
-     * Ensures similarity is initialized
-     */
-    @Override
-    protected void ensureMahoutInitialized() {
-        if (this.mahoutSimilarity == null) {
-            throw new IllegalStateException("Similarity is not set.");
-        }
-        if (this.mahoutItemRecommender == null) {
-            throw new IllegalStateException("ItemBasedRecommender is not set.");
-        }
-    }
-
-    /**
      * @param customerId Customer ID
      * @param count      Count of recommendations to be returned
      * @return List of recommended Books
      */
     @Override
     public List<Integer> recommend(int customerId, int count) {
-        // Ensure similarity is initialized
-        ensureMahoutInitialized();
 
         List<RecommendedItem> recommendations = null;
         try {

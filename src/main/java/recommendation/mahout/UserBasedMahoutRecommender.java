@@ -20,7 +20,7 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
 
     private UserSimilarity mahoutSimilarity;
     private UserNeighborhood mahoutNeighborhood;
-    private int mahoutNeighborhoodSize = -1;
+    private int mahoutNeighborhoodSize = 2;
     private UserBasedRecommender mahoutUserRecommender;
 
     public UserBasedMahoutRecommender(RecommendationSettings settings, DataModel model) {
@@ -59,11 +59,8 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
      */
     @Override
     protected void updateMahoutComponents() {
-        this.mahoutNeighborhood = null;
-        this.mahoutSimilarity = null;
-        this.mahoutUserRecommender = null;
-        this.mahoutNeighborhoodSize = -1;
 
+        // Set Mahout neighborhood size from settings
         this.mahoutNeighborhoodSize = this.getSettings().getNeighborhoodSize();
 
         if (getModel() == null) {
@@ -73,6 +70,7 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
             throw new IllegalStateException("RecommendationSettings is not set.");
         }
 
+        // Set Mahout similarity based on settings
         switch (this.getSettings().getCorrelationSimilarity()) {
             case pearson:
                 try {
@@ -93,6 +91,7 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
                         "Unsupported similarity metric: " + this.getSettings().getCorrelationSimilarity());
         }
 
+        // Set Mahout neighborhood based on settings
         switch (this.getSettings().getUserSimilarity()) {
             case nearestUserNeighborhood:
                 try {
@@ -116,34 +115,12 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
     }
 
     /**
-     * Ensures both similarity and neighborhood are initialized with defaults if
-     * null
-     */
-    @Override
-    protected void ensureMahoutInitialized() {
-        if (this.mahoutNeighborhoodSize == -1) {
-            this.mahoutNeighborhoodSize = this.getSettings().getNeighborhoodSize();
-        }
-        if (this.mahoutSimilarity == null) {
-            throw new IllegalStateException("Similarity is not set.");
-        }
-        if (this.mahoutNeighborhood == null) {
-            throw new IllegalStateException("Neighborhood is not set.");
-        }
-        if (this.mahoutUserRecommender == null) {
-            throw new IllegalStateException("UserBasedRecommender is not set.");
-        }
-    }
-
-    /**
      * @param customerId Costumer ID
      * @param count      Count of recommendations to be returned
      * @return List of recommended Books
      */
     @Override
     public List<Integer> recommend(int customerId, int count) {
-        // Ensure similarity and neighborhood are initialized with defaults if not set
-        ensureMahoutInitialized();
 
         List<RecommendedItem> recommendations = null;
         try {
