@@ -185,12 +185,7 @@ public class BookmarketTest {
         System.out.println("getStocksRecommendationByUsers");
     }
 
-    // createNewCustomer
-    // getName
-    // getUserName
-    // getPassword
-    // getCustomer
-    // getMostRecentOrder
+
     @Test
     public void testCustomerOperations() {
         Calendar.getInstance().set(2000, Calendar.NOVEMBER, 16, 0, 0, 0);
@@ -205,7 +200,7 @@ public class BookmarketTest {
 
         String[] name = Bookmarket.getName(customer.getId());
         assertNotNull("Customer name should be not null", name);
-        assertEquals("Customer name string should have length of 3", 3, name.length);
+        assertEquals("Customer name string array should have length of 3", 3, name.length);
         assertFalse("Customer first name should not be empty", name[0].isEmpty());
         assertEquals("Customer first name should match", "First", name[0]);
         assertFalse("Customer middle name should not be empty", name[1].isEmpty());
@@ -227,40 +222,146 @@ public class BookmarketTest {
 
         Order nullorder = Bookmarket.getMostRecentOrder(username);
         assertNull("Most recent order should be null", nullorder);
+    }
+
+    @Test
+    public void testOrderSequence() {
+        Calendar.getInstance().set(2000, Calendar.NOVEMBER, 16, 0, 0, 0);
+        Date birthdate = Calendar.getInstance().getTime();
+
+        Customer customer = Bookmarket.createNewCustomer(
+                "First", "Last", "Street1", "Street2", "City",
+                "State", "123456-999", "Country", "11-1234-5678", "e@e.com",
+                birthdate, "Data");
+
+        assertNotNull("Customer should be not null", customer);
 
         Date now = new Date();
-        Cart cart = bookstores[0].createCart(new Date().getTime());
-        Address address = customer.getAddress();
+        int cartId = Bookmarket.createEmptyCart(0);
+        assertTrue("Cart ID should be greater than 0", cartId > 0);
 
-        Order order = bookstores[0].confirmBuy(
-                customer.getId(), cart.getId(), "Comment", CreditCards.VISA, 4444L,
-                "FIRST LAST", now, ShipTypes.AIR, now, address.getId(), now.getTime());
+        Cart cart = Bookmarket.getCart(0, cartId);
+        assertNotNull("Cart should not be null", cart);
+        assertEquals("Carts should be equal", cart.getId(), cartId);
 
+        List<CartLine> cartLines = new ArrayList<>(cart.getLines());
+        assertTrue("Cart should be empty at creation", cartLines.isEmpty());
+
+        Book randomBook = Bookmarket.getABookAnyBook();
+        Bookmarket.doCart(0, cartId, randomBook.getId(), null, null);
+
+        cartLines = new ArrayList<>(cart.getLines());
+        assertFalse("Cart should be empty at creation", cartLines.isEmpty());
+        assertTrue("Cart should have the random book in it",
+                cartLines.stream().anyMatch(pred -> pred.getBook().equals(randomBook)));
+
+        Order order = Bookmarket.doBuyConfirm(0, cartId, customer.getId(), CreditCards.VISA, 4444L,
+                "FIRST LAST", now, ShipTypes.AIR);
+
+        String username = Bookmarket.getUserName(customer.getId());
         Order recentOrder = Bookmarket.getMostRecentOrder(username);
         assertNotNull("Most recent order should not be null", recentOrder);
         assertEquals("", order, recentOrder);
     }
 
-    // getBook
-    // getABookAnyBook
-    // doSubjectSearch
-    // doTitleSearch
-    // doAuthorSearch
-    // getNewProducts
-    // getCosts
-    // getBestSellers
-    // getRecommendationByItems
-    // getRecommendationByUsers
-    // getStockRecommendationByUsers
+    @Test
+    public void testGetBook() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        Bookmarket.adminUpdate(randomBook.getId(), 1234.0, "image.png", "thumbnail.png");
+
+        Book anotherBook = Bookmarket.getBook(randomBook.getId());
+        assertNotNull("Book should not be null", anotherBook);
+        assertEquals("Books should be equal", anotherBook, randomBook);
+        assertEquals("Book cost should have been updated", 1234.0, anotherBook.getSrp(), 0.001);
+        assertEquals("Book image should have been updated", "image.png", anotherBook.getImage());
+        assertEquals("Book thumbnail should have been updated", "thumbnail.png", anotherBook.getThumbnail());
+        assertThrows("getBook should throw with invalid id",
+                Exception.class, () -> Bookmarket.getBook(-1));
+    }
+
+    @Test
+    public void testSubjectSearch() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> subjectSearch = Bookmarket.doSubjectSearch(randomBook.getSubject());
+        assertFalse("Subject search should not be empty", subjectSearch.isEmpty());
+        assertTrue("Subject search should return a book with equal Subject",
+                subjectSearch.stream().anyMatch( book -> book.getSubject().equals(randomBook.getSubject())));
+    }
+
+    @Test
+    public void testTitleSearch() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> titleSearch = Bookmarket.doTitleSearch(randomBook.getTitle().substring(0, 8));
+        assertFalse("Title search should not be empty", titleSearch.isEmpty());
+        assertTrue("Title search should return a book with equal Title",
+                titleSearch.stream().anyMatch(book -> book.getTitle().equals(randomBook.getTitle())));
+    }
+
+    @Test
+    public void testAuthorSearch() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> authorSearch = Bookmarket.doAuthorSearch(randomBook.getAuthor().getMname());
+        assertFalse("Author search should not be empty", authorSearch.isEmpty());
+        assertTrue("Author search should return a book with equal Author",
+                authorSearch.stream().anyMatch(book -> book.getAuthor().equals(randomBook.getAuthor())));
+    }
+
+    @Test
+    public void testGetRelated() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> related = Bookmarket.getRelated(randomBook.getId());
+        assertFalse("Related list should not be empty", related.isEmpty());
+        assertEquals("Related list should have length of 5", 5, related.size());
+        assertEquals(related.get(0), randomBook.getRelated1());
+        assertEquals(related.get(1), randomBook.getRelated2());
+        assertEquals(related.get(2), randomBook.getRelated3());
+        assertEquals(related.get(3), randomBook.getRelated4());
+        assertEquals(related.get(4), randomBook.getRelated5());
+
+        List<Book> invalid = Bookmarket.getRelated(-1);
+        assertTrue("Invalid ID should return empty", invalid.isEmpty());
+    }
+
+    @Test
+    public void testGetNewProducts() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> newProducts = Bookmarket.getNewProducts(randomBook.getSubject());
+        assertFalse("New products list should not be empty", newProducts.isEmpty());
+    }
+
+    @Test
+    public void testGetBookCosts() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Double> bookCostInStock = Bookmarket.getCosts(randomBook);
+        assertFalse("Book costs list should not be empty", bookCostInStock.isEmpty());
+        assertTrue(Collections.min(bookCostInStock) <= randomBook.getSrp());
+        assertTrue(Collections.max(bookCostInStock) >= randomBook.getSrp());
+    }
+
+    @Test
+    public void testGetSellers() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        Map<Book, Set<Stock>> bestsellers = Bookmarket.getBestSellers(randomBook.getSubject());
+        assertFalse("Bestsellers list should not be empty", bestsellers.isEmpty());
+    }
+
     // getStocks
     // getStock
-    // getRelated
-    // adminUpdate
-    // createEmptyCart
-    // doCart
-    // getCart
-    // doBuyConfirm
-    // createEvaluation
-    // updateEvaluation
 
 }
