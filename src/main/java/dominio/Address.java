@@ -86,12 +86,12 @@ public class Address implements Serializable {
      */
     public Address(
             int id,
-            final String street1,
-            final String street2,
-            final String city,
-            final String state,
-            final String zip,
-            final Country country) {
+            String street1,
+            String street2,
+            String city,
+            String state,
+            String zip,
+            Country country) {
         this.id = Validator.notNegative(id, "id");
         this.street1 = Validator.notEmpty(street1, "street1");
         this.street2 = Validator.notNull(street2, "street2");
