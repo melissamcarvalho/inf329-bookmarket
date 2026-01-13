@@ -53,12 +53,15 @@ package dominio;
  * you give them.
  *
  ************************************************************************/
+import util.Validator;
+
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * *<img src="./doc-files/Author.png" alt="Author">
- * <br><a href="./doc-files/Author.html"> code </a>
+ * Represents a book author within the bookstore system.
+ * This class is immutable and enforces data integrity through validation and defensive copying.
+ * * <br><img src="./doc-files/Author.png" alt="Author Diagram">
  */
 public class Author implements Serializable {
 
@@ -71,59 +74,64 @@ public class Author implements Serializable {
     private final String bio;
 
     /**
-     *
-     * @param fname
-     * @param mname
-     * @param lname
-     * @param birthdate
-     * @param bio
+     * Constructs a new Author with mandatory validation and defensive copying for the birthdate.
+     * @param fname The author's first name. Cannot be null or empty.
+     * @param mname The author's middle name. Cannot be null (use empty string if none).
+     * @param lname The author's last name. Cannot be null or empty.
+     * @param birthdate The author's date of birth. Cannot be null.
+     * @param bio A short biography of the author. Cannot be null.
+     * @throws NullPointerException if any parameter is null.
+     * @throws IllegalArgumentException if fname or lname are blank.
      */
-    public Author(String fname, String mname, String lname, Date birthdate,
-            String bio) {
-        this.fname = fname;
-        this.mname = mname;
-        this.lname = lname;
-        this.birthdate = birthdate;
-        this.bio = bio;
+    public Author(String fname, String mname, String lname, Date birthdate, String bio) {
+        this.fname = Validator.notEmpty(fname, "fname");
+        this.mname = Validator.notNull(mname, "mname");
+        this.lname = Validator.notEmpty(lname, "lname");
+        this.bio = Validator.notNull(bio, "bio");
+
+        // Defensive copy to ensure immutability
+        Validator.notNull(birthdate, "birthdate");
+        this.birthdate = new Date(birthdate.getTime());
     }
 
     /**
-     *
-     * @return
+     * Gets the author's first name.
+     * @return A non-null String containing the first name.
      */
-    public String getFname() {
+    public final String getFname() {
         return fname;
     }
 
     /**
-     *
-     * @return
+     * Gets the author's last name.
+     * @return A non-null String containing the last name.
      */
-    public String getLname() {
+    public final String getLname() {
         return lname;
     }
 
     /**
-     *
-     * @return
+     * Gets the author's middle name.
+     * @return A non-null String containing the middle name (may be empty).
      */
-    public String getMname() {
+    public final String getMname() {
         return mname;
     }
 
     /**
-     *
-     * @return
+     * Gets the author's birthdate.
+     * Returns a copy of the internal date to maintain immutability.
+     * @return A non-null {@link Date} object.
      */
-    public Date getBirthdate() {
-        return birthdate;
+    public final Date getBirthdate() {
+        return new Date(birthdate.getTime());
     }
 
     /**
-     *
-     * @return
+     * Gets the author's biography.
+     * @return A non-null String containing the bio.
      */
-    public String getBio() {
+    public final String getBio() {
         return bio;
     }
 
