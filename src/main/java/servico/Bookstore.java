@@ -90,25 +90,29 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * The {@code Bookstore} class represents an individual bookstore within the Bookmarket system.
+ * The {@code Bookstore} class represents an individual bookstore within the
+ * Bookmarket system.
  * <p>
  * <b>Architecture Overview:</b><br>
- * Bookstore encapsulates all data and operations related to a single store, including books, customers,
- * orders, carts, authors, and inventory (stock). It is responsible for the core business logic and data management
- * for its own partition of the market. Multiple Bookstore instances are managed by the {@link Bookmarket} class,
- * which coordinates global operations across all stores.
+ * Bookstore encapsulates all data and operations related to a single store,
+ * including books, customers, orders, carts, authors, and inventory (stock). It
+ * is responsible for the core business logic and data management for its own
+ * partition of the market. Multiple Bookstore instances are managed by the
+ * {@link Bookmarket} class, which coordinates global operations across all
+ * stores.
  * <ul>
- *   <li>Stores and manages books, customers, authors, and orders.</li>
- *   <li>Implements search, recommendation, and customer management logic.</li>
- *   <li>Provides methods for querying and manipulating store-specific data.</li>
- *   <li>Acts as the main domain model for the Bookmarket system, with most business rules implemented here.</li>
+ * <li>Stores and manages books, customers, authors, and orders.</li>
+ * <li>Implements search, recommendation, and customer management logic.</li>
+ * <li>Provides methods for querying and manipulating store-specific data.</li>
+ * <li>Acts as the main domain model for the Bookmarket system, with most
+ * business rules implemented here.</li>
  * </ul>
  * <b>Key Responsibilities:</b>
  * <ul>
- *   <li>Book, author, and customer CRUD operations.</li>
- *   <li>Order and cart management.</li>
- *   <li>Recommendation and search features.</li>
- *   <li>Acts as a data source for the service layer in {@link Bookmarket}.</li>
+ * <li>Book, author, and customer CRUD operations.</li>
+ * <li>Order and cart management.</li>
+ * <li>Recommendation and search features.</li>
+ * <li>Acts as a data source for the service layer in {@link Bookmarket}.</li>
  * </ul>
  * <p>
  * <img src="./doc-files/Bookstore.png" alt="Bookstore">
@@ -135,7 +139,7 @@ public class Bookstore implements Serializable {
     private final List<Order> ordersById;
     private final LinkedList<Order> ordersByCreation;
     private static final List<Evaluation> evaluationById;
-    
+
     private final int id;
 
     static {
@@ -151,7 +155,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Bookstore constructor.
+     * Bookstore constructor.
      */
     public Bookstore(final int id) {
         this.id = id;
@@ -168,22 +172,22 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     Returns the bookstore ID.
+     * Returns the bookstore ID.
      */
     public int getId() {
         return id;
     }
 
     /**
-     Returns whether the bookstore data has been populated.
+     * Returns whether the bookstore data has been populated.
      */
     public boolean isPopulated() {
         return populated;
     }
 
     /**
-     Returns a country by its name
-     If it does not exist, creates a new country with empty currency and 0 exchange rate.
+     * Returns a country by its name If it does not exist, creates a new country
+     * with empty currency and 0 exchange rate.
      */
     private static Country alwaysGetCountry(String name) {
         Country country = countryByName.get(name);
@@ -194,14 +198,14 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Returns a random country.
+     * Returns a random country.
      */
     private static Country getACountryAnyCountry(Random random) {
         return countryById.get(random.nextInt(countryById.size()));
     }
 
     /**
-     Creates a new country.
+     * Creates a new country.
      */
     private static Country createCountry(String name, String currency, double exchange) {
         int id = countryById.size();
@@ -212,8 +216,8 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     Returns an address by its components.
-     If it does not exist, creates a new address.
+     * Returns an address by its components. If it does not exist, creates a new
+     * address.
      */
     public static Address alwaysGetAddress(String street1, String street2,
             String city, String state, String zip, String countryName) {
@@ -228,14 +232,14 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Returns a random address.
+     * Returns a random address.
      */
     private static Address getAnAddressAnyAddress(Random random) {
         return addressById.get(random.nextInt(addressById.size()));
     }
 
     /**
-     Creates a new address.
+     * Creates a new address.
      */
     private static Address createAddress(String street1, String street2,
             String city, String state, String zip, Country country) {
@@ -248,29 +252,28 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     Returns a customer by their ID.
+     * Returns a customer by their ID.
      */
     public static Customer getCustomer(int cId) {
         return customersById.get(cId);
     }
 
     /**
-    Returns a customer by their usernamex.
+     * Returns a customer by their usernamex.
      */
     public static Optional<Customer> getCustomer(String username) {
         return Optional.ofNullable(customersByUsername.get(username));
     }
 
     /**
-     Returns a random customer.
+     * Returns a random customer.
      */
     private Customer getACustomerAnyCustomer(Random random) {
         return customersById.get(random.nextInt(customersById.size()));
     }
 
     /**
-     Creates a new customer with method overloading.
-     Public preparation method
+     * Creates a new customer with method overloading. Public preparation method
      */
     public static Customer createCustomer(String fname, String lname, String street1,
             String street2, String city, String state, String zip,
@@ -285,9 +288,9 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Creates a new customer.
-    Private method that is called by the public preparation method to define a new customer.
-    */
+     * Creates a new customer. Private method that is called by the public
+     * preparation method to define a new customer.
+     */
     private static Customer createCustomer(String fname, String lname, Address address,
             String phone, String email, Date since, Date lastVisit,
             Date login, Date expiration, double discount, Date birthdate,
@@ -303,7 +306,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Set new login time and new expiration time for an active customer.
+     * Set new login time and new expiration time for an active customer.
      */
     public static void refreshCustomerSession(int cId, long now) {
         Customer customer = getCustomer(cId);
@@ -314,15 +317,15 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Returns a random author.
-    */
+     * Returns a random author.
+     */
     private static Author getAnAuthorAnyAuthor(Random random) {
         return authorsById.get(random.nextInt(authorsById.size()));
     }
 
     /**
-     Creates a new author.
-    */
+     * Creates a new author.
+     */
     private static Author createAuthor(String fname, String mname, String lname,
             Date birthdate, String bio) {
         Author author = new Author(fname, mname, lname, birthdate, bio);
@@ -331,7 +334,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    Gets a book by its ID.
+     * Gets a book by its ID.
      */
     public static Optional<Book> getBook(int bId) {
         return Optional.ofNullable(booksById.get(bId));
@@ -352,12 +355,12 @@ public class Bookstore implements Serializable {
         List<Integer> recommended = recommendationEngine.recommendByUsers(customerId, 10);
 
         List<Book> recommendedBooks = recommended.stream()
-            .map(Bookstore::getBook)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
+                .map(Bookstore::getBook)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
 
-       return recommendedBooks;
+        return recommendedBooks;
     }
 
     /**
@@ -403,7 +406,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     Returns a list of books by author.
+     * Returns a list of books by author.
      */
     public static List<Book> getBooksByAuthor(String author) {
         Pattern regex = Pattern.compile("^" + author);
@@ -516,20 +519,31 @@ public class Bookstore implements Serializable {
      * @return
      */
     public Map<Book, Integer> getBestSellers(SUBJECTS subject) {
-        Map<Book, Integer> bookSales = new HashMap<>();
+        if (subject == null) {
+            throw new IllegalArgumentException("Subject cannot be null");
+        }
 
-        // Iterate through all orders to find sales of books of the given subject
-        ordersByCreation.stream()
-            .filter(order -> order.isShipped())
-            .forEach(order -> { 
-                order.getLines().stream()
-                    .filter(line -> line.getBook().getSubject().equals(subject))
-                    .forEach(line -> {
-                        // Update the sales count
-                        bookSales.put(line.getBook(), bookSales.getOrDefault(line.getBook(), 0) + line.getQty());
-                    });
-            });
-        
+        // Take a snapshot of ordersByCreation under lock to avoid concurrent
+        // modification issues. We avoid holding the lock while doing stream
+        // processing to keep contention low.
+        final List<Order> ordersSnapshot;
+        synchronized (ordersByCreation) {
+            ordersSnapshot = new ArrayList<>(ordersByCreation);
+        }
+
+        // Use streams + flatMap to transform orders -> order lines, filter out
+        // nulls and lines whose book is null, then group by Book summing the
+        // quantities. This improves readability and follows the functional
+        // style used across Bookmarket.
+        Map<Book, Integer> bookSales = ordersSnapshot.stream()
+                .filter(order -> order != null && order.isShipped())
+                .flatMap(order -> order.getLines().stream())
+                .filter(line -> line != null && line.getBook() != null && subject.equals(line.getBook().getSubject()))
+                .collect(Collectors.groupingBy(
+                        line -> line.getBook(),
+                        Collectors.summingInt(line -> line.getQty())
+                ));
+
         return bookSales;
     }
 
@@ -571,7 +585,7 @@ public class Bookstore implements Serializable {
         book.setImage(image);
         book.setThumbnail(thumbnail);
         book.setPubDate(new Date(now));
-        
+
     }
 
     /**
@@ -600,7 +614,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-     
+     *
      */
     private void updateRelatedBooks(Book targetBook) {
         HashSet<Integer> clientIds = new HashSet<>();
@@ -678,7 +692,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+     *
      */
     public Cart cartUpdate(int cId, Integer bId, List<Integer> bIds,
             List<Integer> quantities, long now) {
@@ -698,7 +712,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+     *
      */
     public Order confirmBuy(int customerId, int cartId, String comment,
             CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
@@ -725,7 +739,7 @@ public class Bookstore implements Serializable {
     }
 
     /**
-    
+     *
      */
     public Order confirmBuy(int customerId, int cartId, String comment,
             CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
@@ -778,7 +792,7 @@ public class Bookstore implements Serializable {
     private static Random rand;
 
     /**
-    
+     *
      */
     public static boolean populate(long seed, long now, int items, int customers,
             int addresses, int authors) {
@@ -937,9 +951,6 @@ public class Bookstore implements Serializable {
         System.out.println(" Done");
     }
 
-
-
-
     private static void populateBooks(int number, Random rand) {
 
         System.out.print("Creating " + number + " books...");
@@ -1026,8 +1037,6 @@ public class Bookstore implements Serializable {
         System.out.println(" Done");
     }
 
-
-
     private void populateOrders(int number, Random rand, long now) {
 
         System.out.print("Creating " + number + " orders...");
@@ -1079,7 +1088,7 @@ public class Bookstore implements Serializable {
 
     private void populateEvaluation(int number, Random rand) {
         System.out.print("Creating " + number + " evaluations...");
-        
+
         for (int i = 0; i < number; i++) {
             if (i % 10000 == 0) {
                 System.out.print(".");
