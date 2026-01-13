@@ -22,13 +22,14 @@ public abstract class BaseMahoutRecommender {
 
     public BaseMahoutRecommender(RecommendationSettings settings, DataModel model) {
         this.settings = settings;
-        this.model = model; 
-        
+        this.model = model;
+
         this.updateMahoutComponents();
     }
 
     /**
      * Refresh Mahout DataModel
+     * 
      * @param model Mahout DataModel
      */
     public void refresh(DataModel model) {
@@ -39,6 +40,7 @@ public abstract class BaseMahoutRecommender {
 
     /**
      * Get the current Mahout DataModel
+     * 
      * @return DataModel instance
      */
     public DataModel getModel() {
@@ -47,6 +49,7 @@ public abstract class BaseMahoutRecommender {
 
     /**
      * Get the current recommendation settings
+     * 
      * @return RecommendationSettings instance
      */
     public RecommendationSettings getSettings() {
@@ -55,6 +58,7 @@ public abstract class BaseMahoutRecommender {
 
     /**
      * Set new recommendation settings
+     * 
      * @param settings
      */
     public void setSettings(RecommendationSettings settings) {
@@ -63,11 +67,6 @@ public abstract class BaseMahoutRecommender {
         this.updateMahoutComponents();
     }
 
-    /**
-     * Ensure the recommender is initialized
-     */
-    protected abstract void ensureMahoutInitialized();
-    
     /**
      * Update Mahout components based on current settings
      */
