@@ -29,17 +29,6 @@ public class BookmarketTest {
     private Book topSellerBook;
     private Book secondSellerBook;
 
-    public BookmarketTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
     @Before
     /**
      * É necessário popular a Bookstore para realização dos testes.
@@ -165,26 +154,7 @@ public class BookmarketTest {
         assertEquals( eval.get().getCustomer(), eval2.getCustomer() );
         assertEquals( eval.get().getBook(), eval2.getBook() );
         assertEquals( rating, eval2.getRating(), 0.01 );
-
     }
-
-    /**
-     * Test of getPriceBookRecommendationByUsers method, of class Bookmarket.
-     */
-    @Test
-    public void testGetPriceBookRecommendationByUsers() {
-        System.out.println("getPriceBookRecommendationByUsers");
-
-    }
-
-    /**
-     * Test of getPriceBookRecommendationByUsers method, of class Bookmarket.
-     */
-    @Test
-    public void testGetStocksRecommendationByUsers() {
-        System.out.println("getStocksRecommendationByUsers");
-    }
-
 
     @Test
     public void testCustomerOperations() {
@@ -348,8 +318,10 @@ public class BookmarketTest {
 
         List<Double> bookCostInStock = Bookmarket.getCosts(randomBook);
         assertFalse("Book costs list should not be empty", bookCostInStock.isEmpty());
-        assertTrue(Collections.min(bookCostInStock) <= randomBook.getSrp());
-        assertTrue(Collections.max(bookCostInStock) >= randomBook.getSrp());
+        assertTrue("Minimum book cost in stock should be equal or lower",
+                Collections.min(bookCostInStock) <= randomBook.getSrp());
+        assertTrue("Maximum book cost in stock should be equal or higher",
+                Collections.max(bookCostInStock) >= randomBook.getSrp());
     }
 
     @Test
@@ -361,7 +333,46 @@ public class BookmarketTest {
         assertFalse("Bestsellers list should not be empty", bestsellers.isEmpty());
     }
 
-    // getStocks
-    // getStock
+    @Test
+    public void testGetStock() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
 
+        List<Stock> stocks = Bookmarket.getStocks(randomBook.getId());
+        assertNotNull("Stock list should not be null", stocks);
+        assertFalse("Stock list should not be empty", stocks.isEmpty());
+
+        int storeId = stocks.get(0).getIdBookstore();
+        Stock storeStock = Bookmarket.getStock(storeId, randomBook.getId());
+        assertNotNull("Stock should not be null", storeStock);
+        assertEquals("Books should be equal", stocks.get(0), storeStock);
+    }
+
+    @Test
+    public void testRecommendationByItens() {
+        List<Book> recommendations = Bookmarket.getRecommendationByItens(79);
+        assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
+        assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
+                10, recommendations.size());
+    }
+
+    @Test
+    public void testRecommendationByUsers() {
+        List<Book> recommendations = Bookmarket.getRecommendationByUsers(79);
+        assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
+        assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
+                10, recommendations.size());
+    }
+
+    @Test
+    public void testStocksRecommendationByUsers() {
+        // TODO
+        System.out.println("TODO: testStocksRecommendationByUsers");
+    }
+
+    @Test
+    public void testPriceBookRecommendationByUsers() {
+        // TODO
+        System.out.println("TODO: testPriceBookRecommendationByUsers");
+    }
 }
