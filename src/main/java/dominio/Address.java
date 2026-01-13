@@ -5,7 +5,7 @@ package dominio;
  *
  ************************************************************************
  *
- * This is part of the the Java TPC-W distribution,
+ * This is part of the Java TPC-W distribution,
  * written by Harold Cain, Tim Heil, Milo Martin, Eric Weglarz, and Todd
  * Bezenek.  University of Wisconsin - Madison, Computer Sciences
  * Dept. and Dept. of Electrical and Computer Engineering, as a part of
@@ -53,11 +53,14 @@ package dominio;
  * you give them.
  *
  ************************************************************************/
+import util.Validator;
 import java.io.Serializable;
 
 /**
- * *<img src="./doc-files/Address.png" alt="Address">
- * <br><a href="./doc-files/Address.html"> code </a>
+ * Represents a physical address within the system.
+ * This class is used to define locations for Customers, Suppliers,
+ * and Bookstore stock locations.
+ * * <br><img src="./doc-files/Address.png" alt="Address Diagram">
  */
 public class Address implements Serializable {
 
@@ -72,86 +75,94 @@ public class Address implements Serializable {
     private final Country country;
 
     /**
-     *
-     * @param id -
-     * @param street1 -
-     * @param street2 -
-     * @param city -
-     * @param state -
-     * @param zip -
-     * @param country -
+     * Constructs a new Address with full details.
+     * @param id The unique identifier for this address record in the database.
+     * @param street1 The primary address line (e.g., House number and Street name).
+     * @param street2 The secondary address line (e.g., Apartment, Suite, or Unit number).
+     * @param city The name of the city.
+     * @param state The state, province, or region.
+     * @param zip The ZIP or Postal code.
+     * @param country The {@link Country} object associated with this address.
      */
-    public Address(int id, String street1, String street2, String city,
-            String state, String zip, Country country) {
-        this.id = id;
-        this.street1 = street1;
-        this.street2 = street2;
-        this.city = city;
-        this.state = state;
-        this.zip = zip;
-        this.country = country;
+    public Address(
+            int id,
+            final String street1,
+            final String street2,
+            final String city,
+            final String state,
+            final String zip,
+            final Country country) {
+        this.id = Validator.notNegative(id, "id");
+        this.street1 = Validator.notEmpty(street1, "street1");
+        this.street2 = Validator.notNull(street2, "street2");
+        this.city = Validator.notEmpty(city, "city");
+        this.state = Validator.notEmpty(state, "state");
+        this.zip = Validator.notEmpty(zip, "zip");
+        this.country = Validator.notNull(country, "country");
     }
 
     /**
-     *
-     * @return
+     * Gets the unique identifier of the address.
+     * @return The database ID.
      */
-    public int getId() {
+    public final int getId() {
         return id;
     }
 
     /**
-     *
-     * @return
+     * Gets the primary street address.
+     * @return A String containing the primary street line.
      */
-    public String getStreet1() {
+    public final String getStreet1() {
         return street1;
     }
 
     /**
-     *
-     * @return
+     * Gets the secondary address line (complement).
+     * @return A String containing the street2 line, or null if not provided.
      */
-    public String getStreet2() {
+    public final String getStreet2() {
         return street2;
     }
 
     /**
-     *
-     * @return
+     * Gets the city name.
+     * @return A String containing the city.
      */
-    public String getCity() {
+    public final String getCity() {
         return city;
     }
 
     /**
-     *
-     * @return
+     * Gets the state or province.
+     * @return A String containing the state.
      */
-    public String getState() {
+    public final String getState() {
         return state;
     }
 
     /**
-     *
-     * @return
+     * Gets the ZIP or postal code.
+     * @return A String containing the postal code.
      */
-    public String getZip() {
+    public final String getZip() {
         return zip;
     }
 
     /**
-     *
-     * @return
+     * Gets the country associated with this address.
+     * @return The {@link Country} object.
      */
-    public Country getCountry() {
+    public final Country getCountry() {
         return country;
     }
 
     /**
-     *
-     * @param o
-     * @return
+     * Compares this address to the specified object for equality.
+     * The comparison is based on all physical address fields (street, city, state, zip, country).
+     * The 'id' field is ignored for logical equality.
+     * @param o The object to compare this Address against.
+     * @return {@code true} if the given object represents an Address equivalent to this one.
      */
     @Override
     public boolean equals(Object o) {
@@ -168,8 +179,9 @@ public class Address implements Serializable {
     }
 
     /**
-     *
-     * @return
+     * Returns a hash code value for the address.
+     * The hash is computed using the textual components of the address.
+     * * @return A hash code value for this object.
      */
     @Override
     public int hashCode() {
