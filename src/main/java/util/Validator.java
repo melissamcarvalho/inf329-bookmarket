@@ -28,6 +28,20 @@ public final class Validator {
      * @return value if not negative
      * @throws IllegalArgumentException if the value is less than 0.
      */
+    public static long notNegative(long value, String paramName) {
+        if (value < 0) {
+            throw new IllegalArgumentException(paramName + " cannot be negative. Value provided: " + value);
+        }
+        return value;
+    }
+
+    /**
+     * Validates that the specified double value is not negative.
+     * * @param value The value to check.
+     * @param paramName The name of the parameter for the error message.
+     * @return value if not negative
+     * @throws IllegalArgumentException if the value is less than 0.
+     */
     public static double notNegative(double value, String paramName) {
         if (value < 0) {
             throw new IllegalArgumentException(paramName + " cannot be negative. Value provided: " + value);
