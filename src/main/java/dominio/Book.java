@@ -1,12 +1,12 @@
 package dominio;
 
 /*
- * Book.java - Class used to store all of the data associated with a single
+ * Book.java - Class used to store all the data associated with a single
  *             book. 
  * 
  ************************************************************************
  *
- * This is part of the the Java TPC-W distribution,
+ * This is part of the Java TPC-W distribution,
  * written by Harold Cain, Tim Heil, Milo Martin, Eric Weglarz, and Todd
  * Bezenek.  University of Wisconsin - Madison, Computer Sciences
  * Dept. and Dept. of Electrical and Computer Engineering, as a part of
@@ -54,20 +54,16 @@ package dominio;
  * you give them.
  *
  ************************************************************************/
+import util.Validator;
+
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * *<img src="./doc-files/Book.png" alt="Book">
- * <br><a href="./doc-files/Book.html"> code </a>
- */
-/**
- * Represents a book in the Bookmarket system, encapsulating all data associated with a single book.
- * <p>
- * This class is a core domain entity and contains information such as title, author, subject,
- * publication details, pricing, and related books. It is used throughout the system for book management,
- * searching, and recommendation features.
- * </p>
+ * Represents a book in the Bookmarket system.
+ * This class acts as a central domain entity, managing metadata, pricing,
+ * and relationships between titles.
+ * <br><img src="./doc-files/Book.png" alt="Book Class Diagram">
  */
 public class Book implements Serializable {
 
@@ -96,58 +92,63 @@ public class Book implements Serializable {
     private final Author author;
 
     /**
-     * Constructs a new Book with all its attributes.
-     *
-     * @param id Unique identifier for the book.
-     * @param title Title of the book.
-     * @param pubDate Publication date.
-     * @param publisher Publisher name.
-     * @param subject Subject category.
-     * @param desc Description of the book.
-     * @param thumbnail URL or path to the thumbnail image.
-     * @param image URL or path to the main image.
-     * @param srp Suggested retail price.
-     * @param avail Date when the book is available.
-     * @param isbn ISBN code.
-     * @param page Number of pages.
-     * @param backing Book binding type.
-     * @param dimensions Array with book dimensions.
-     * @param weight Weight of the book.
-     * @param author Author of the book.
+     * Constructs a new Book with strict validation and defensive copying.
+     * @param id Unique identifier.
+     * @param title Book title. Cannot be empty.
+     * @param pubDate Publication date. Cannot be null.
+     * @param publisher Publisher name. Cannot be empty.
+     * @param subject Category. Cannot be null.
+     * @param desc Description. Cannot be null.
+     * @param thumbnail Thumbnail path. Cannot be null.
+     * @param image Full image path. Cannot be null.
+     * @param srp Suggested Retail Price. Must be non-negative.
+     * @param avail Availability date. Cannot be null.
+     * @param isbn ISBN code. Cannot be empty.
+     * @param page Page count. Must be positive.
+     * @param backing Binding type. Cannot be null.
+     * @param dimensions Array [width, height, depth]. Cannot be null.
+     * @param weight Weight in grams/ounces. Must be non-negative.
+     * @param author The {@link Author} object. Cannot be null.
      */
     public Book(int id, String title, Date pubDate, String publisher,
             SUBJECTS subject, String desc, String thumbnail,
             String image, double srp, Date avail, String isbn,
-            int page, BACKINGS backing, int[] dimensions,double weight, Author author
-            ) {
-        this.id = id;
-        this.title = title;
-        this.pubDate = pubDate;
-        this.publisher = publisher;
-        this.subject = subject;
-        this.desc = desc;
+            int page, BACKINGS backing, int[] dimensions, double weight, Author author) {
+        this.id = Validator.notNegative(id, "id");
+
+        this.title = Validator.notEmpty(title, "title");
+        this.publisher = Validator.notEmpty(publisher, "publisher");
+        this.desc = Validator.notEmpty(desc, "desc");
+        this.thumbnail = Validator.notEmpty(thumbnail, "thumbnail");
+        this.image = Validator.notEmpty(image, "image");
+        this.isbn = Validator.notEmpty(isbn, "isbn");
+
+        this.subject = Validator.notNull(subject, "subject");
+        this.backing = Validator.notNull(backing, "backing");
+        this.author = Validator.notNull(author, "author");
+
+        this.srp = Validator.notNegative(srp, "srp");;
+        this.page = Validator.notNegative(page, "page");
+        this.weight = Validator.notNegative(weight, "weight");
+
+        // Defensive copying for mutable types
+        this.pubDate = new Date(Validator.notNull(pubDate, "pubDate").getTime());
+        this.avail = new Date(Validator.notNull(avail, "avail").getTime());
+        this.dimensions = Validator.notNull(dimensions, "dimensions").clone();
+
         this.related1 = null;
         this.related2 = null;
         this.related3 = null;
         this.related4 = null;
         this.related5 = null;
-        this.thumbnail = thumbnail;
-        this.image = image;
-        this.srp = srp;
-        this.avail = avail;
-        this.isbn = isbn;
-        this.page = page;
-        this.backing = backing;
-        this.dimensions = dimensions;
-        this.weight = weight;
-        this.author = author;
+
     }
 
     /**
      * Gets the title of the book.
      * @return The book title.
      */
-    public String getTitle() {
+    public final String getTitle() {
         return title;
     }
 
@@ -155,7 +156,7 @@ public class Book implements Serializable {
      * Gets the thumbnail image path or URL.
      * @return The thumbnail image.
      */
-    public String getThumbnail() {
+    public final String getThumbnail() {
         return thumbnail;
     }
 
@@ -163,7 +164,7 @@ public class Book implements Serializable {
      * Sets the thumbnail image path or URL.
      * @param thumbnail The thumbnail image.
      */
-    public void setThumbnail(String thumbnail) {
+    public final void setThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
     }
 
@@ -172,7 +173,7 @@ public class Book implements Serializable {
      * Gets the main image path or URL.
      * @return The main image.
      */
-    public String getImage() {
+    public final String getImage() {
         return image;
     }
 
@@ -180,15 +181,15 @@ public class Book implements Serializable {
      * Sets the main image path or URL.
      * @param image The main image.
      */
-    public void setImage(String image) {
-        this.image = image;
+    public final void setImage(String image) {
+        this.image = Validator.notEmpty(image, "image");
     }
 
     /**
      * Gets the author of the book.
      * @return The author.
      */
-    public Author getAuthor() {
+    public final Author getAuthor() {
         return author;
     }
 
@@ -196,7 +197,7 @@ public class Book implements Serializable {
      * Gets the suggested retail price.
      * @return The price.
      */
-    public double getSrp() {
+    public final double getSrp() {
         return srp;
     }
 
@@ -205,7 +206,7 @@ public class Book implements Serializable {
      * Gets the description of the book.
      * @return The description.
      */
-    public String getDesc() {
+    public final String getDesc() {
         return desc;
     }
 
@@ -213,7 +214,7 @@ public class Book implements Serializable {
      * Gets the number of pages.
      * @return The page count.
      */
-    public int getPage() {
+    public final int getPage() {
         return page;
     }
 
@@ -221,7 +222,7 @@ public class Book implements Serializable {
      * Gets the book binding type.
      * @return The backing type.
      */
-    public BACKINGS getBacking() {
+    public final BACKINGS getBacking() {
         return backing;
     }
 
@@ -229,23 +230,23 @@ public class Book implements Serializable {
      * Gets the publication date.
      * @return The publication date.
      */
-    public Date getPubDate() {
-        return pubDate;
+    public final Date getPubDate() {
+        return new Date(pubDate.getTime());
     }
 
     /**
      * Sets the publication date.
      * @param pubDate The publication date.
      */
-    public void setPubDate(Date pubDate) {
-        this.pubDate = pubDate;
+    public final void setPubDate(Date pubDate) {
+        this.pubDate = new Date(pubDate.getTime());
     }
 
     /**
      * Gets the publisher name.
      * @return The publisher.
      */
-    public String getPublisher() {
+    public final String getPublisher() {
         return publisher;
     }
 
@@ -253,7 +254,7 @@ public class Book implements Serializable {
      * Gets the ISBN code.
      * @return The ISBN.
      */
-    public String getIsbn() {
+    public final String getIsbn() {
         return isbn;
     }
 
@@ -261,7 +262,7 @@ public class Book implements Serializable {
      * Gets the unique identifier of the book.
      * @return The book ID.
      */
-    public int getId() {
+    public final int getId() {
         return id;
     }
 
@@ -269,7 +270,7 @@ public class Book implements Serializable {
      * Gets the dimensions of the book.
      * @return The dimensions array.
      */
-    public int[] getDimensions() {
+    public final int[] getDimensions() {
         return dimensions;
     }
 
@@ -277,17 +278,15 @@ public class Book implements Serializable {
      * Gets the weight of the book.
      * @return The weight.
      */
-    public double getWeight() {
+    public final double getWeight() {
         return weight;
     }
-    
-    
 
     /**
      * Gets the subject category of the book.
      * @return The subject.
      */
-    public SUBJECTS getSubject() {
+    public final SUBJECTS getSubject() {
         return subject;
     }
 
@@ -295,15 +294,15 @@ public class Book implements Serializable {
      * Gets the date when the book is available.
      * @return The availability date.
      */
-    public Date getAvail() {
-        return avail;
+    public final Date getAvail() {
+        return new Date(avail.getTime());
     }
 
     /**
      * Gets the first related book.
      * @return The related book.
      */
-    public Book getRelated1() {
+    public final Book getRelated1() {
         return related1;
     }
 
@@ -311,7 +310,7 @@ public class Book implements Serializable {
      * Gets the second related book.
      * @return The related book.
      */
-    public Book getRelated2() {
+    public final Book getRelated2() {
         return related2;
     }
 
@@ -319,7 +318,7 @@ public class Book implements Serializable {
      * Gets the third related book.
      * @return The related book.
      */
-    public Book getRelated3() {
+    public final Book getRelated3() {
         return related3;
     }
 
@@ -327,7 +326,7 @@ public class Book implements Serializable {
      * Gets the fourth related book.
      * @return The related book.
      */
-    public Book getRelated4() {
+    public final Book getRelated4() {
         return related4;
     }
 
@@ -335,48 +334,48 @@ public class Book implements Serializable {
      * Gets the fifth related book.
      * @return The related book.
      */
-    public Book getRelated5() {
+    public final Book getRelated5() {
         return related5;
     }
 
     /**
      * Sets the first related book.
-     * @param related1 The related book.
+     * @param related The related book.
      */
-    public void setRelated1(Book related1) {
-        this.related1 = related1;
+    public final void setRelated1(Book related) {
+        this.related1 = Validator.notNull(related, "related");
     }
 
     /**
      * Sets the second related book.
-     * @param related2 The related book.
+     * @param related The related book.
      */
-    public void setRelated2(Book related2) {
-        this.related2 = related2;
+    public final void setRelated2(Book related) {
+        this.related2 = Validator.notNull(related, "related");
     }
 
     /**
      * Sets the third related book.
-     * @param related3 The related book.
+     * @param related The related book.
      */
-    public void setRelated3(Book related3) {
-        this.related3 = related3;
+    public final void setRelated3(Book related) {
+        this.related3 = Validator.notNull(related, "related");
     }
 
     /**
      * Sets the fourth related book.
-     * @param related4 The related book.
+     * @param related The related book.
      */
-    public void setRelated4(Book related4) {
-        this.related4 = related4;
+    public final void setRelated4(Book related) {
+        this.related4 = Validator.notNull(related, "related");
     }
 
     /**
      * Sets the fifth related book.
-     * @param related5 The related book.
+     * @param related The related book.
      */
-    public void setRelated5(Book related5) {
-        this.related5 = related5;
+    public final void setRelated5(Book related) {
+        this.related5 = Validator.notNull(related, "related");
     }
 
     /**
