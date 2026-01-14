@@ -53,11 +53,14 @@ package dominio;
  * you give them.
  *
  ************************************************************************/
+import util.Validator;
+
 import java.io.Serializable;
 
 /**
- * *<img src="./doc-files/Country.png" alt="Country">
- * <br><a href="./doc-files/Country.html"> code </a>
+ * Represents a country and its financial metadata, such as currency and exchange rates.
+ * This class is used for internationalization and price conversion within the store.
+ * <br><img src="./doc-files/Country.png" alt="Country Diagram">
  */
 public class Country implements Serializable {
 
@@ -69,69 +72,54 @@ public class Country implements Serializable {
     private final double exchange;
 
     /**
-     *
-     * @param id
-     * @param name
-     * @param currency
-     * @param exchange
+     * Constructs a Country instance with mandatory financial validation.
+     * @param id Unique database identifier.
+     * @param name Full name of the country. Must not be empty.
+     * @param currency Currency code (e.g., USD, BRL). Must not be empty.
+     * @param exchange Exchange rate relative to the base currency. Must be positive.
+     * @throws NullPointerException if name or currency is null.
+     * @throws IllegalArgumentException if exchange is zero or negative.
      */
     public Country(int id, String name, String currency, double exchange) {
-        this.id = id;
-        this.name = name;
-        this.currency = currency;
-        this.exchange = exchange;
+        this.id = Validator.notNegative(id, "id");
+        this.name = Validator.notEmpty(name, "name");
+        this.currency = Validator.notEmpty(currency, "currency");
+        this.exchange = Validator.notNegative(exchange, "exchange");
     }
 
-    /**
-     *
-     * @return
-     */
+    /** @return Unique identifier. */
     public int getId() {
         return id;
     }
 
-    /**
-     *
-     * @return
-     */
+    /** @return The country name. */
     public String getName() {
         return name;
     }
 
-    /**
-     *
-     * @return
-     */
+    /** @return The currency code. */
     public String getCurrency() {
         return currency;
     }
 
-    /**
-     *
-     * @return
-     */
+    /** @return The current exchange rate. */
     public double getExchange() {
         return exchange;
     }
 
     /**
-     *
-     * @param o
-     * @return
+     * Compares equality based on the unique name of the country.
+     * @param o Object to compare.
+     * @return true if names are identical.
      */
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Country) {
-            Country country = (Country) o;
-            return name.equals(country.name);
-        }
-        return false;
+        if (this == o) return true;
+        if (!(o instanceof Country)) return false;
+        Country country = (Country) o;
+        return name.equals(country.name);
     }
 
-    /**
-     *
-     * @return
-     */
     @Override
     public int hashCode() {
         return name.hashCode();
