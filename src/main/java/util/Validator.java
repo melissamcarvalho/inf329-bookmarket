@@ -22,6 +22,23 @@ public final class Validator {
     }
 
     /**
+     * Validates that a numeric value falls within a specific range, inclusive of the boundaries.
+     * This is typically used for percentage validations, ratings, or coordinate bounds.
+     * @param value The double value to be checked.
+     * @param min The minimum allowable value (inclusive).
+     * @param max The maximum allowable value (inclusive).
+     * @param paramName The name of the parameter used in the error message for traceability.
+     * @return The validated value if it falls within the specified range.
+     * @throws IllegalArgumentException if the value is strictly less than min or strictly greater than max.
+     */
+    public static double notOverrangeInclusive(double value, double min, double max, String paramName) {
+        if (value < min || value > max) {
+            throw new IllegalArgumentException(paramName + "is overrange. Value: " + value + ". Min: " + min + ". Max: " + max);
+        }
+        return value;
+    }
+
+    /**
      * Validates that the specified double value is not negative.
      * * @param value The value to check.
      * @param paramName The name of the parameter for the error message.
