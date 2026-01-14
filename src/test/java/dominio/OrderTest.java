@@ -30,11 +30,13 @@ public class OrderTest {
 
         Book book = new Book(
                 1, "Title", now, "Pub", SUBJECTS.ARTS, "D", "t", "i",
-                100.0, now, "ISBN", 100, BACKINGS.HARDBACK, new int[]{1,1}, 0.5, author);
+                100.0, now, "ISBN", 100, BACKINGS.HARDBACK, new int[]{1,1,1}, 0.5, author);
 
         // Criando um carrinho com itens para testar a conversão
-        cart = new Cart(500, now);
         Stock stock = new Stock(1, address, book, 100.0, 10);
+
+        cart = new Cart(500, now);
+        cart.increaseLine(stock, 1);
 
         cc = new CCTransaction(
                 CreditCards.VISA, 1234L, "Owner", now, "AUTH1", 200.0, now, brasil);
@@ -82,7 +84,7 @@ public class OrderTest {
                 originalTime, immut.getDate().getTime());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testConstructorShouldFailWithNegativeId() {
         // QA: Um pedido não pode ser gerado sem um carrinho de origem
         new Order(-1, customer, now, cart, "Comment", ShipTypes.AIR, now, StatusTypes.PENDING, address, address, cc);
