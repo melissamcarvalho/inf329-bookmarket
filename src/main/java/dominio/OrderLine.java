@@ -54,6 +54,8 @@ package dominio;
  * you give them.
  *
  ************************************************************************/
+import util.Validator;
+
 import java.io.Serializable;
 
 /**
@@ -77,17 +79,16 @@ public class OrderLine implements Serializable {
 
     /**
      * Constructs an OrderLine with the specified book, quantity, discount, and comments.
-     *
      * @param book The book being purchased.
-     * @param qty The quantity of the book.
+     * @param qty The quantity of the book. Should be positive.
      * @param discount The discount applied to this item.
      * @param comments Any comments related to this order line.
      */
     public OrderLine(Book book, int qty, double discount, String comments) {
-        this.book = book;
-        this.qty = qty;
-        this.discount = discount;
-        this.comments = comments;
+        this.book = Validator.notNull(book, "book");
+        this.qty = Validator.notNegative(qty, "qty");
+        this.discount = Validator.notOverrangeInclusive(discount, 0, 100, "discount");
+        this.comments = Validator.notNull(comments, "comments");
     }
 
     /**
