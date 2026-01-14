@@ -70,7 +70,7 @@ public class CCTransaction implements Serializable {
     private static final long serialVersionUID = 5470177450411822726L;
 
     private final CreditCards type;
-    private final long num;
+    private final long[] num;
     private final String name;
     private final Date expire;
     private final String authId;
@@ -92,16 +92,21 @@ public class CCTransaction implements Serializable {
      * @throws IllegalArgumentException if amount is negative or name is empty.
      */
     public CCTransaction(
-            CreditCards type, long num, String name, Date expire,
+            CreditCards type, long[] num, String name, Date expire,
             String authId, double amount, Date date, Country country) {
         this.type = Validator.notNull(type, "type");
-        this.num = Validator.notNegative(num, "num");
         this.name = Validator.notEmpty(name, "name");
         this.authId = Validator.notEmpty(authId, "authId");
         this.country = Validator.notNull(country, "country");
         this.amount = Validator.notNegative(amount, "amount");
         this.expire = new Date(Validator.notNull(expire, "expire").getTime());
         this.date = new Date(Validator.notNull(date, "date").getTime());
+
+        Validator.notNull(num, "num");
+        if (num.length != 4) {
+            throw new IllegalArgumentException("CC Card number should be an array with length 4");
+        }
+        this.num = num;
     }
 
     /**
@@ -116,7 +121,7 @@ public class CCTransaction implements Serializable {
      *
      * @return
      */
-    public long getNum() {
+    public long[] getNum() {
         return num;
     }
 

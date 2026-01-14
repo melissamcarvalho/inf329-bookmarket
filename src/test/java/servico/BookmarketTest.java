@@ -73,7 +73,7 @@ public class BookmarketTest {
         Bookmarket.init(0, recommendationSettings, bookstores);
         Bookmarket.populate(items, customers, addresses, authors, orders, stocks, evaluations);
 
-        // Create a predictable sales scenario for best-seller testing
+        // Create a predictable sales scenario for bestseller testing
         List<Book> artBooks = Bookmarket.doSubjectSearch(SUBJECTS.ARTS);
         topSellerBook = artBooks.get(0);
         secondSellerBook = artBooks.get(1);
@@ -81,10 +81,17 @@ public class BookmarketTest {
         Customer customer = Bookstore.getCustomer(1);
         int cartId = Bookmarket.createEmptyCart(bookstores[0].getId());
         Cart cart = Bookmarket.getCart(bookstores[0].getId(), cartId);
-        cart.increaseLine(bookstores[0].getStock(topSellerBook.getId()), 1000000);
-        cart.increaseLine(bookstores[0].getStock(secondSellerBook.getId()), 50);
 
-        Bookmarket.doBuyConfirm(bookstores[0].getId(), cartId, customer.getId(), CreditCards.AMEX, 123456789012345L, "Test User", new Date(), ShipTypes.AIR, StatusTypes.SHIPPED);
+        int currentStockTop = bookstores[0].getStock(topSellerBook.getId()).getQty();
+        cart.increaseLine(bookstores[0].getStock(topSellerBook.getId()), currentStockTop);
+
+        int currentStockSec = bookstores[0].getStock(topSellerBook.getId()).getQty();
+        cart.increaseLine(bookstores[0].getStock(secondSellerBook.getId()), currentStockSec);
+
+        Bookmarket.doBuyConfirm(
+                bookstores[0].getId(), cartId, customer.getId(), CreditCards.AMEX,
+                new long[]{1111, 2222, 3333, 4444}, "Test User",
+                new Date(), ShipTypes.AIR, StatusTypes.SHIPPED);
     }
 
     /**
@@ -218,14 +225,18 @@ public class BookmarketTest {
         assertTrue("Cart should be empty at creation", cartLines.isEmpty());
 
         Book randomBook = Bookmarket.getABookAnyBook();
-        Bookmarket.doCart(0, cartId, randomBook.getId(), null, null);
+        HashMap<Integer, Integer> bookQtyMap = new HashMap<>();
+        bookQtyMap.put(randomBook.getId(), 1);
+
+        Bookmarket.doCart(0, cartId, bookQtyMap);
 
         cartLines = new ArrayList<>(cart.getLines());
         assertFalse("Cart should be empty at creation", cartLines.isEmpty());
         assertTrue("Cart should have the random book in it",
                 cartLines.stream().anyMatch(pred -> pred.getBook().equals(randomBook)));
 
-        Order order = Bookmarket.doBuyConfirm(0, cartId, customer.getId(), CreditCards.VISA, 4444L,
+        Order order = Bookmarket.doBuyConfirm(0, cartId, customer.getId(), CreditCards.VISA,
+                new long[]{1111, 2222, 3333, 4444},
                 "FIRST LAST", now, ShipTypes.AIR);
 
         String username = Bookmarket.getUserName(customer.getId());
@@ -244,9 +255,9 @@ public class BookmarketTest {
         Book anotherBook = Bookmarket.getBook(randomBook.getId());
         assertNotNull("Book should not be null", anotherBook);
         assertEquals("Books should be equal", anotherBook, randomBook);
-        assertEquals("Book cost should have been updated", 1234.0, anotherBook.getSrp(), 0.001);
-        assertEquals("Book image should have been updated", "image.png", anotherBook.getImage());
-        assertEquals("Book thumbnail should have been updated", "thumbnail.png", anotherBook.getThumbnail());
+        assertEquals("Book cost should have been updated", 1234.0, randomBook.getSrp(), 0.001);
+        assertEquals("Book image should have been updated", "image.png", randomBook.getImage());
+        assertEquals("Book thumbnail should have been updated", "thumbnail.png", randomBook.getThumbnail());
         assertThrows("getBook should throw with invalid id",
                 Exception.class, () -> Bookmarket.getBook(-1));
     }

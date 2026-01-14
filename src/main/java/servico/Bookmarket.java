@@ -29,7 +29,7 @@ import recommendation.RecommendationSettings;
  *   <li>Manages the global state of the system via a {@code StateMachine} that holds all {@code Bookstore} objects.</li>
  *   <li>Provides static methods for searching, retrieving, and manipulating books, customers, and orders.</li>
  *   <li>Delegates most domain-specific logic to the {@code Bookstore} class, acting as a central access point.</li>
- *   <li>Supports recommendations, best-seller queries, and price aggregation across all bookstores.</li>
+ *   <li>Supports recommendations, bestseller queries, and price aggregation across all bookstores.</li>
  *   <li>Handles system initialization and data population for testing or demonstration purposes.</li>
  * </ul>
  * <b>Key Responsibilities:</b>
@@ -37,7 +37,7 @@ import recommendation.RecommendationSettings;
  *   <li>System initialization and seeding with {@link #init(int, Bookstore...)} and {@link #populate(int, int, int, int, int)}.</li>
  *   <li>Customer management: creation, session refresh, and retrieval.</li>
  *   <li>Book management: search by subject, title, author, and retrieval of new products.</li>
- *   <li>Order and cart management, including recommendations and best-seller listings.</li>
+ *   <li>Order and cart management, including recommendations and bestseller listings.</li>
  *   <li>Acts as a bridge between the client layer and the domain logic in {@code Bookstore}.</li>
  * </ul>
  * <p>
@@ -425,7 +425,12 @@ public class Bookmarket {
      * @return
      */
     public static List<Book> getRelated(int i_id) {
-        Book book = Bookstore.getBook(i_id).get();
+        Optional<Book> opt = Bookstore.getBook(i_id);
+        if (!opt.isPresent()) {
+            return new ArrayList<>();
+        }
+
+        Book book = opt.get();
         ArrayList<Book> related = new ArrayList<>(5);
         related.add(book.getRelated1());
         related.add(book.getRelated2());
@@ -469,25 +474,15 @@ public class Bookmarket {
     /**
      *
      * @param storeId
-     * @param SHOPPING_ID
-     * @param I_ID
+     * @param cartId
      * @param ids
-     * @param quantities
      * @return
      */
-    public static Cart doCart(int storeId, int SHOPPING_ID, Integer I_ID, List<Integer> ids,
-            List<Integer> quantities) {
+    public static Cart doCart(int storeId, int cartId, HashMap<Integer, Integer> ids) {
         try {
-            Cart cart = (Cart) stateMachine.execute(new CartUpdateAction(storeId,
-                    SHOPPING_ID, I_ID, ids, quantities,
-                    System.currentTimeMillis()));
-            if (cart.getLines().isEmpty()) {
-                Book book = Bookstore.getABookAnyBook(random);
-                cart = (Cart) stateMachine.execute(new CartUpdateAction(storeId,
-                        SHOPPING_ID, book.getId(), new ArrayList<>(),
-                        new ArrayList<>(), System.currentTimeMillis()));
-            }
-            return cart;
+            return (Cart) stateMachine.execute(
+                    new CartUpdateAction(storeId, cartId, ids, System.currentTimeMillis()));
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -522,7 +517,7 @@ public class Bookmarket {
      * @return
      */
     public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
-            CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
+            CreditCards cc_type, long[] cc_number, String cc_name, Date cc_expiry,
             ShipTypes shipping, StatusTypes status) {
         long now = System.currentTimeMillis();
         try {
@@ -548,7 +543,7 @@ public class Bookmarket {
      * @return
      */
     public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
-            CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
+            CreditCards cc_type, long[] cc_number, String cc_name, Date cc_expiry,
             ShipTypes shipping) {
         return doBuyConfirm(storeId, shopping_id, customer_id, cc_type,
                 cc_number, cc_name, cc_expiry, shipping, StatusTypes.PENDING);
@@ -574,7 +569,7 @@ public class Bookmarket {
      * @return
      */
     public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
-            CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
+            CreditCards cc_type, long[] cc_number, String cc_name, Date cc_expiry,
             ShipTypes shipping, String street_1, String street_2, String city,
             String state, String zip, String country, StatusTypes status) {
         Address address = Bookstore.alwaysGetAddress(street_1, street_2,
@@ -609,7 +604,7 @@ public class Bookmarket {
      * @return
      */
     public static Order doBuyConfirm(int storeId, int shopping_id, int customer_id,
-            CreditCards cc_type, long cc_number, String cc_name, Date cc_expiry,
+            CreditCards cc_type, long[] cc_number, String cc_name, Date cc_expiry,
             ShipTypes shipping, String street_1, String street_2, String city,
             String state, String zip, String country) {
         return doBuyConfirm(storeId, shopping_id, customer_id, cc_type,
@@ -885,28 +880,21 @@ public class Bookmarket {
 
         private static final long serialVersionUID = -6062032194650262105L;
 
-        final int cId, storeId;
-        final Integer bId;
-        final List<Integer> bIds;
-        final List<Integer> quantities;
+        final int cartId, storeId;
+        final HashMap<Integer, Integer> bIds;
         final long now;
 
         /**
          *
          * @param storeId
-         * @param id
-         * @param id2
+         * @param cartId
          * @param ids
-         * @param quantities
          * @param now
          */
-        public CartUpdateAction(int storeId, int id, Integer id2, List<Integer> ids,
-                List<Integer> quantities, long now) {
+        public CartUpdateAction(int storeId, int cartId, HashMap<Integer, Integer> ids, long now) {
             this.storeId = storeId;
-            cId = id;
-            bId = id2;
-            bIds = ids;
-            this.quantities = quantities;
+            this.cartId = cartId;
+            this.bIds = ids;
             this.now = now;
         }
 
@@ -917,7 +905,10 @@ public class Bookmarket {
          */
         @Override
         public Object executeOnBookstore(Stream<Bookstore> bookstore) {
-            return bookstore.filter(bs -> bs.getId() == this.storeId).findFirst().get().cartUpdate(cId, bId, bIds, quantities, now);
+            return bookstore.filter(bs -> bs.getId() == this.storeId)
+                    .findFirst()
+                    .get()
+                    .cartUpdate(cartId, bIds, now);
         }
     }
 
@@ -931,7 +922,7 @@ public class Bookmarket {
         final int customerId, storeId, cartId;
         String comment;
         CreditCards ccType;
-        long ccNumber;
+        long[] ccNumber;
         String ccName;
         Date ccExpiry;
         ShipTypes shipping;
@@ -957,7 +948,7 @@ public class Bookmarket {
          * @param status
          */
         public ConfirmBuyAction(int storeId, int customerId, int cartId,
-                String comment, CreditCards ccType, long ccNumber,
+                String comment, CreditCards ccType, long[] ccNumber,
                 String ccName, Date ccExpiry, ShipTypes shipping,
                 Date shippingDate, int addressId, long now, StatusTypes status) {
             this.storeId = storeId;
@@ -982,9 +973,12 @@ public class Bookmarket {
          */
         @Override
         public Object executeOnBookstore(Stream<Bookstore> bookstore) {
-            return bookstore.filter(bs -> bs.getId() == this.storeId).findFirst().get().confirmBuy(customerId, cartId, comment, ccType,
-                    ccNumber, ccName, ccExpiry, shipping, shippingDate,
-                    addressId, now, status);
+            return bookstore.filter(
+                    bs -> bs.getId() == this.storeId).findFirst().get()
+                    .confirmBuy(
+                            customerId, cartId, comment, ccType,
+                            ccNumber, ccName, ccExpiry, shipping, shippingDate,
+                            addressId, now, status);
         }
     }
 

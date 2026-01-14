@@ -53,8 +53,10 @@ package servico;
  ************************************************************************/
 
 import dominio.*;
+import jdk.internal.joptsimple.util.KeyValuePair;
 import recommendation.*;
 import util.TPCW_Util;
+import util.Validator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -172,7 +174,7 @@ public class Bookstore implements Serializable {
     private static Country alwaysGetCountry(String name) {
         Country country = countryByName.get(name);
         if (country == null) {
-            country = createCountry(name, "", 0);
+            country = createCountry(name, "ABC", 0);
         }
         return country;
     }
@@ -318,7 +320,11 @@ public class Bookstore implements Serializable {
     Gets a book by its ID.
      */
     public static Optional<Book> getBook(int bId) {
-        return Optional.ofNullable(booksById.get(bId));
+        try {
+            return Optional.ofNullable(booksById.get(bId));
+        } catch (IndexOutOfBoundsException e) {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -388,7 +394,7 @@ public class Bookstore implements Serializable {
      Returns a list of books by author.
      */
     public static List<Book> getBooksByAuthor(String author) {
-        Pattern regex = Pattern.compile(author, Pattern.CASE_INSENSITIVE);
+        Pattern regex = Pattern.compile("\\Q" + author + "\\E", Pattern.CASE_INSENSITIVE);
         ArrayList<Book> books = new ArrayList<>();
         for (Book book : booksById) {
             boolean match = regex.matcher(book.getAuthor().getFname()).find() ||
@@ -660,20 +666,15 @@ public class Bookstore implements Serializable {
     /**
     
      */
-    public Cart cartUpdate(int cId, Integer bId, List<Integer> bIds,
-            List<Integer> quantities, long now) {
+    public Cart cartUpdate(int cId, HashMap<Integer, Integer> bookQuantities, long now) {
         Cart cart = getCart(cId);
 
-        if (bId != null) {
-            cart.increaseLine(stockByBook.get(getBook(bId).get()), 1);
-        }
-
-        for (int i = 0; i < bIds.size(); i++) {
-            cart.changeLine(stockByBook.get(getBook(bId).get()), quantities.get(i));
-        }
+        bookQuantities.forEach( (bookId, qty) -> {
+            Optional<Book> opt = getBook(bookId);
+            opt.ifPresent(book -> cart.changeLine(stockByBook.get(book), qty));
+        });
 
         cart.setTime(new Date(now));
-
         return cart;
     }
 
@@ -681,7 +682,7 @@ public class Bookstore implements Serializable {
     
      */
     public Order confirmBuy(int customerId, int cartId, String comment,
-            CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
+            CreditCards ccType, long[] ccNumber, String ccName, Date ccExpiry,
             ShipTypes shipping, Date shippingDate, int addressId, long now, StatusTypes status) {
         Customer customer = getCustomer(customerId);
         Cart cart = getCart(cartId);
@@ -697,7 +698,7 @@ public class Bookstore implements Serializable {
             stockByBook.get(book).addQty(21);
         });
         CCTransaction ccTransact = new CCTransaction(ccType, ccNumber, ccName,
-                ccExpiry, "", cart.total(customer),
+                ccExpiry, "123", cart.total(customer),
                 new Date(now), shippingAddress.getCountry());
         return createOrder(customer, new Date(now), cart, comment, shipping,
                 shippingDate, status, customer.getAddress(),
@@ -708,7 +709,7 @@ public class Bookstore implements Serializable {
     
      */
     public Order confirmBuy(int customerId, int cartId, String comment,
-            CreditCards ccType, long ccNumber, String ccName, Date ccExpiry,
+            CreditCards ccType, long[] ccNumber, String ccName, Date ccExpiry,
             ShipTypes shipping, Date shippingDate, int addressId, long now) {
         return confirmBuy(customerId, cartId, comment, ccType, ccNumber, ccName,
                 ccExpiry, shipping, shippingDate, addressId, now,
@@ -1030,23 +1031,36 @@ public class Bookstore implements Serializable {
                 System.out.print(".");
             }
             int nBooks = TPCW_Util.getRandomInt(rand, 1, 5);
-            Cart cart = new Cart(-1, null);
+            Cart cart = new Cart(0, new Date());
             String comment = TPCW_Util.getRandomString(rand, 20, 100);
             for (int j = 0; j < nBooks; j++) {
                 Book book = getABookAnyBook(rand);
-                int quantity = TPCW_Util.getRandomInt(rand, 1, 300);
+                int stock = TPCW_Util.getRandomInt(rand, 300, 400);
+                int quantity = TPCW_Util.getRandomInt(rand, 1, stock);
                 if (!stockByBook.containsKey(book)) {
                     double cost = TPCW_Util.getRandomDouble(rand, 10d, 500d);
-                    int stock = TPCW_Util.getRandomInt(rand, 300, 400);
                     stockByBook.put(book, new Stock(this.id, getAnAddressAnyAddress(rand), book, cost, stock));
                 }
+
+                int currentStock = stockByBook.get(book).getQty();
+                if (currentStock < quantity) {
+                    quantity = currentStock;
+                }
+
                 cart.changeLine(stockByBook.get(book), quantity);
             }
+
+            long[] cardNumber = {
+                    TPCW_Util.getRandomLong(rand, 1000L, 9999L),
+                    TPCW_Util.getRandomLong(rand, 1000L, 9999L),
+                    TPCW_Util.getRandomLong(rand, 1000L, 9999L),
+                    TPCW_Util.getRandomLong(rand, 1000L, 9999L)
+            };
 
             Customer customer = getACustomerAnyCustomer(rand);
             CCTransaction ccTransact = new CCTransaction(
                     CreditCards.values()[rand.nextInt(CreditCards.values().length)],
-                    TPCW_Util.getRandomLong(rand, 1000000000000000L, 9999999999999999L),
+                    cardNumber,
                     TPCW_Util.getRandomString(rand, 14, 30),
                     new Date(now + TPCW_Util.getRandomInt(rand, 10, 730) * 86400000L /* a day */),
                     TPCW_Util.getRandomString(rand, 15, 15),

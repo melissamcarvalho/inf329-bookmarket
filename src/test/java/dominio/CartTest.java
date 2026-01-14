@@ -32,7 +32,7 @@ public class CartTest {
 
         // Setup de Customer (Assumindo que tem um desconto de 10%)
         customer = new Customer(
-                1, "user", "pass", "", "", "", "",
+                1, "user", "pass", "first", "last", "11-0000-0000", "e@e.com",
                 now, now, now, now, 10.0, 0.0, 0.0, now, "", addr);
 
         cart = new Cart(500, now);

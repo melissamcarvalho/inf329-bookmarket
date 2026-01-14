@@ -39,7 +39,7 @@ public class OrderTest {
         cart.increaseLine(stock, 1);
 
         cc = new CCTransaction(
-                CreditCards.VISA, 1234L, "Owner", now, "AUTH1", 200.0, now, brasil);
+                CreditCards.VISA, new long[]{1234L, 5678L, 1234L, 5678L}, "Owner", now, "AUTH1", 200.0, now, brasil);
 
         order = new Order(
                 1, customer, now, cart, "Comment", ShipTypes.AIR,

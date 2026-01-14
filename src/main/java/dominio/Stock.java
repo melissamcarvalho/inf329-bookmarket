@@ -47,8 +47,8 @@ public class Stock {
      */
     public void addQty(int amount) {
         int result = this.qty + amount;
-        if (result <= 0) {
-            throw new IllegalArgumentException("Resulting stock quantity cannot be negative or zero. Current: "
+        if (result < 0) {
+            throw new IllegalArgumentException("Resulting stock quantity cannot be negative. Current: "
                     + this.qty + ", Adjustment: " + amount);
         }
         this.qty = result;

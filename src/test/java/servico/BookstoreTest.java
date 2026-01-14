@@ -64,7 +64,8 @@ public class BookstoreTest {
         cart.increaseLine(instance.getStock(book2.getId()), qty2);
 
         instance.confirmBuy(customer.getId(), cart.getId(), "Test comment",
-                CreditCards.VISA, 1234567890123456L, "Test Customer", new Date(),
+                CreditCards.VISA, new long[]{1111, 2222, 3333, 4444},
+                "Test Customer", new Date(),
                 ShipTypes.AIR, new Date(), customer.getAddress().getId(),
                 System.currentTimeMillis(), StatusTypes.SHIPPED);
 
