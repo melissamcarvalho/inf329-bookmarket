@@ -101,43 +101,37 @@ public class BookTest {
         assertEquals(expected, book.toString());
     }
 
-    @Test
-    public void testConstructorShouldFailWithNegativePrice() {
-        Book bookMalformed = new Book(
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorShouldFailWithNegativeWeight() {
+        new Book(
                 1, "Java Programming", now, "Tech Press",
                 SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
                 49.90, now, "123456789", 500, BACKINGS.HARDBACK,
                 dims, -1.0, author
         );
-
-        assertTrue(bookMalformed.getSrp() >= 0);
     }
 
-    @Test
-    public void testConstructorShouldFailWithNegativeWeight() {
-        Book bookMalformed = new Book(
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorShouldFailWithNegativePrice() {
+        new Book(
                 1, "Java Programming", now, "Tech Press",
                 SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
                 -49.90, now, "123456789", 500, BACKINGS.HARDBACK,
                 dims, 1.0, author
         );
-
-        assertTrue(bookMalformed.getWeight() >= 0);
     }
 
-    @Test
-    public void testConstructorShouldFailWithPageCount() {
-        Book bookMalformed = new Book(
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorShouldFailWithNegativePageCount() {
+        new Book(
                 1, "Java Programming", now, "Tech Press",
                 SUBJECTS.ARTS, "A great book", "thumb.jpg", "full.jpg",
                 49.90, now, "123456789", -1, BACKINGS.HARDBACK,
                 dims, 1.0, author
         );
-
-        assertTrue(bookMalformed.getPage() >= 0);
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullAuthor() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -147,7 +141,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullDimensions() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -157,7 +151,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullBackings() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -167,7 +161,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullISBN() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -177,7 +171,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullAvailability() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -187,7 +181,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullImage() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -197,7 +191,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullThumbnail() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -207,7 +201,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullDescription() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -217,7 +211,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullSubject() {
         new Book(
                 1, "Java Programming", now, "Tech Press",
@@ -227,7 +221,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullPublisher() {
         new Book(
                 1, "Java Programming", now, null,
@@ -237,7 +231,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullPublishDate() {
         new Book(
                 1, "Java Programming", null, "Tech Press",
@@ -247,7 +241,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = NullPointerException.class)
     public void testConstructorShouldFailWithNullTitle() {
         new Book(
                 1, null, now, "Tech Press",
@@ -257,7 +251,7 @@ public class BookTest {
         );
     }
 
-    @Test(expected = Exception.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testConstructorShouldFailWithNegativeId() {
         new Book(
                 -1, "Java Programming", now, "Tech Press",
