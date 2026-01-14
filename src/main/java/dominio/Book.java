@@ -134,7 +134,12 @@ public class Book implements Serializable {
         // Defensive copying for mutable types
         this.pubDate = new Date(Validator.notNull(pubDate, "pubDate").getTime());
         this.avail = new Date(Validator.notNull(avail, "avail").getTime());
-        this.dimensions = Validator.notNull(dimensions, "dimensions").clone();
+
+        Validator.notNull(dimensions, "dimensions");
+        if (dimensions.length != 3) {
+            throw new IllegalArgumentException("dimensions array should have length of 3");
+        }
+        this.dimensions = dimensions.clone();
 
         this.related1 = null;
         this.related2 = null;
