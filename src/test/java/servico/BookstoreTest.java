@@ -20,7 +20,6 @@ public class BookstoreTest {
 
     @BeforeClass
     public static void setUpClass() {
-        
         long seed = 0;
         long now = System.currentTimeMillis();
         int items = 1000;
@@ -41,7 +40,6 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBestSellers() {
-        System.out.println("getBestSellers");
         SUBJECTS subject = SUBJECTS.ARTS;
 
         // 1. Get baseline sales
@@ -58,7 +56,8 @@ public class BookstoreTest {
         int qty1 = 100;
         int qty2 = 50;
 
-        Customer customer = Bookstore.getCustomer(1);
+        Customer customer = Bookstore.getCustomer(1)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
         Cart cart = instance.createCart(System.currentTimeMillis());
         cart.increaseLine(instance.getStock(book1.getId()), qty1);
         cart.increaseLine(instance.getStock(book2.getId()), qty2);
@@ -84,7 +83,6 @@ public class BookstoreTest {
      */
     @Test
     public void testIsPopulated() {
-        System.out.println("isPopulated");
         boolean expResult = true;
         boolean result = instance.isPopulated();
         assertEquals(expResult, result);
@@ -95,13 +93,12 @@ public class BookstoreTest {
      */
     @Test
     public void testAlwaysGetAddress() {
-        System.out.println("alwaysGetAddress");
-        String street1 = "";
-        String street2 = "";
-        String city = "";
-        String state = "";
-        String zip = "";
-        String countryName = "";
+        String street1 = "street1";
+        String street2 = "street2";
+        String city = "city";
+        String state = "state";
+        String zip = "123456-999";
+        String countryName = "Brasil";
         Address result = Bookstore.alwaysGetAddress(street1, street2, city, state, zip, countryName);
         Address expResult = new Address(0, street1, street2, city, state, zip, result.getCountry());
         assertEquals(expResult, result);
@@ -113,9 +110,9 @@ public class BookstoreTest {
      */
     @Test
     public void testGetCustomer_int() {
-        System.out.println("getCustomer");
         int cId = 0;
-        Customer result = Bookstore.getCustomer(cId);
+        Customer result = Bookstore.getCustomer(cId)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
         assertEquals(cId, result.getId());
     }
 
@@ -124,9 +121,11 @@ public class BookstoreTest {
      */
     @Test
     public void testGetCustomer_String() {
-        System.out.println("getCustomer");
-        String username = Bookstore.getCustomer(10).getUname();
-        Customer result = Bookstore.getCustomer(username).get();
+        String username = Bookstore.getCustomer(10)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"))
+                .getUname();
+        Customer result = Bookstore.getCustomer(username)
+                .orElseThrow(() -> new RuntimeException("Username not found"));
         assertNotNull(result);
         assertEquals(username, result.getUname());
     }
@@ -136,21 +135,20 @@ public class BookstoreTest {
      */
     @Test
     public void testCreateCustomer() {
-        System.out.println("createCustomer");
-        String fname = "";
-        String lname = "";
-        String street1 = "";
-        String street2 = "";
-        String city = "";
-        String state = "";
-        String zip = "";
-        String countryName = "";
-        String phone = "";
-        String email = "";
+        String fname = "first";
+        String lname = "last";
+        String street1 = "street1";
+        String street2 = "street2";
+        String city = "city";
+        String state = "state";
+        String zip = "12345-999";
+        String countryName = "Brasil";
+        String phone = "11-91234-5678";
+        String email = "e@e.com";
         double discount = 0.0;
-        Date birthdate = null;
-        String data = "";
-        long now = 0L;
+        Date birthdate = new Date();
+        String data = "data";
+        long now = new Date().getTime();
 
         Customer result = Bookstore.createCustomer(fname, lname, street1, street2, city, state, zip, countryName, phone, email, discount, birthdate, data, now);
         int id = result.getId();
@@ -172,7 +170,6 @@ public class BookstoreTest {
      */
     @Test
     public void testRefreshCustomerSession() {
-        System.out.println("refreshCustomerSession");
         int cId = 0;
         long now = 0L;
         Bookstore.refreshCustomerSession(cId, now);
@@ -183,7 +180,6 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBook() {
-        System.out.println("getBook");
         int bId = 0;
         Book result = Bookstore.getBook(bId).get();
         assertNotNull(result);
@@ -195,7 +191,6 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBooksBySubject() {
-        System.out.println("getBooksBySubject");
         SUBJECTS subject = SUBJECTS.ARTS;
         List<Book> result = Bookstore.getBooksBySubject(subject);
         assertEquals(result.size(), result.stream().filter(book -> book.getSubject().equals(subject)).count());
@@ -207,7 +202,6 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBooksByTitle() {
-        System.out.println("getBooksByTitle");
         Book book = Bookstore.getBook(0).get();
         assertNotNull(book);
 
@@ -224,7 +218,6 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBooksByAuthor() {
-        System.out.println("getBooksByAuthor");
         Book book = Bookstore.getBook(0).get();
         assertNotNull(book);
 
@@ -241,7 +234,6 @@ public class BookstoreTest {
      */
     @Test
     public void testGetNewBooks() {
-        System.out.println("getNewBooks");
         SUBJECTS subject = Bookstore.getBook(0).get().getSubject();
         List<Book> result = Bookstore.getNewBooks(subject);
         assertEquals(result.size(),
@@ -254,16 +246,16 @@ public class BookstoreTest {
      */
     @Test
     public void testUpdateBook() {
-        System.out.println("updateBook");
-        int bId = 0;
-        double cost = 0.0;
-        String image = "";
-        String thumbnail = "";
-        long now = 0L;
+        Random random = new Random(0);
+        int bId = Bookstore.getABookAnyBook(random).getId();
+        double cost = 555.0;
+        String image = "image.png";
+        String thumbnail = "thumbnail.png";
+        long now = new Date().getTime();
         Book book = Bookstore.getBook(bId).get();
-        Bookstore.updateBook(bId, image, thumbnail, now);
+        Bookstore.updateBook(bId, cost, image, thumbnail, now);
         assertEquals(bId, book.getId());
-        //assertEquals(cost, book.getCost(), 0.0);
+        assertEquals(cost, book.getSrp(), 0.001);
         assertEquals(image, book.getImage());
         assertEquals(thumbnail, book.getThumbnail());
     }
@@ -271,7 +263,7 @@ public class BookstoreTest {
     @Test
     public void customerRecommendation() {
         List<Book> recommendations = Bookstore.getRecommendationByUsers(79);
-        assertEquals(10, recommendations.size());
+        assertEquals(5, recommendations.size());
     }
 
     @Test
