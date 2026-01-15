@@ -28,7 +28,10 @@ public class CCTransactionTest {
     @Test
     public void testGetters() {
         assertEquals(CreditCards.VISA, transaction.getType());
-        assertEquals(1234567812345678L, transaction.getNum());
+        assertEquals(1234L, transaction.getNum()[0]);
+        assertEquals(5678L, transaction.getNum()[1]);
+        assertEquals(1234L, transaction.getNum()[2]);
+        assertEquals(5678L, transaction.getNum()[3]);
         assertEquals("JOHN DOE", transaction.getName());
         assertEquals(150.75, transaction.getAmount(), 0.001);
         assertEquals(brazil, transaction.getCountry());
