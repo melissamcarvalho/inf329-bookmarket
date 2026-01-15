@@ -450,7 +450,6 @@ public class Bookmarket {
      * @return
      */
     public static List<Book> getRelated(int idBook) {
-        Validator.notNegative(idBook, "Book ID");
         Optional<Book> opt = Bookstore.getBook(idBook);
         if (!opt.isPresent()) {
             return new ArrayList<>();
