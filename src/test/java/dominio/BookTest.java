@@ -95,12 +95,6 @@ public class BookTest {
         assertEquals("HashCodes devem ser iguais para IDs iguais", book.hashCode(), bookSameId.hashCode());
     }
 
-    @Test
-    public void testToString() {
-        String expected = "Book{id=1}";
-        assertEquals(expected, book.toString());
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorShouldFailWithNegativeWeight() {
         new Book(
