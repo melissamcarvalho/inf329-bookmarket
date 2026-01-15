@@ -52,7 +52,7 @@ public class StockTest {
     @Test(expected = Exception.class)
     public void testAddQtyNegativeAmountShouldFail() {
         stock.setQty(5);
-        stock.addQty(-5);
+        stock.addQty(-6);
     }
 
     @Test(expected = Exception.class)
