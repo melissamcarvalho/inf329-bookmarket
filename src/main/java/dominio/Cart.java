@@ -126,7 +126,8 @@ public class Cart implements Serializable {
         int newTotalQty = currentQty + quantity;
 
         if (stock.getQty() < newTotalQty) {
-            throw new IllegalArgumentException("Insufficient stock for Book ID: " + book.getId());
+            throw new IllegalArgumentException("Insufficient stock for Book ID: " + book.getId()
+                    + ". Current: " + stock.getQty() + ". Requested: " + newTotalQty);
         }
 
         if (line == null) {
@@ -150,7 +151,8 @@ public class Cart implements Serializable {
         Validator.notNull(stock, "stock");
 
         if (stock.getQty() < quantity) {
-            throw new IllegalArgumentException("Requested quantity exceeds available stock.");
+            throw new IllegalArgumentException("Requested quantity exceeds available stock."
+                    + ". Current: " + stock.getQty() + ". Requested: " + quantity);
         }
 
         Book book = stock.getBook();
