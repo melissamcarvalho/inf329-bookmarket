@@ -82,7 +82,7 @@ public class Book implements Serializable {
     private Book related5;
     private String thumbnail;
     private String image;
-    private final double srp;
+    private double srp;
     private final Date avail;
     private final String isbn;
     private final int page;
@@ -114,6 +114,7 @@ public class Book implements Serializable {
             SUBJECTS subject, String desc, String thumbnail,
             String image, double srp, Date avail, String isbn,
             int page, BACKINGS backing, int[] dimensions, double weight, Author author) {
+
         this.id = Validator.notNegative(id, "id");
 
         this.title = Validator.notEmpty(title, "title");
@@ -206,6 +207,13 @@ public class Book implements Serializable {
         return srp;
     }
 
+    /**
+     * Sets the price cost
+     * @param cost The price
+     */
+    public final void setSrp(double cost) {
+        this.srp = Validator.notNegative(cost, "cost");
+    }
 
     /**
      * Gets the description of the book.
@@ -412,7 +420,7 @@ public class Book implements Serializable {
      */
     @Override
     public String toString() {
-        return "Book{" + "id=" + id + '}';
+        return "Book{" + "id=" + id + ",cost=" + srp + '}';
     }
     
     
