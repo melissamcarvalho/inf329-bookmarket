@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dominio.*;
+import org.apache.commons.lang.NotImplementedException;
 import util.TPCW_Util;
 
 import recommendation.RecommendationSettings;
+import util.Validator;
 
 /**
  * The {@code Bookmarket} class serves as the main service layer and entry point for the Bookmarket system.
@@ -117,11 +119,14 @@ public class Bookmarket {
 
     /**
      *
-     * @param UNAME
+     * @param username
      * @return
      */
-    public static Customer getCustomer(String UNAME) {
-        return Bookstore.getCustomer(UNAME).get();
+    public static Customer getCustomer(String username) {
+        Validator.notEmpty(username, "username");
+
+        return Bookstore.getCustomer(username)
+                .orElseThrow(() -> new RuntimeException("username not found"));
     }
 
     /**
@@ -130,42 +135,53 @@ public class Bookmarket {
      * @return
      */
     public static String[] getName(int c_id) {
+        Validator.notNegative(c_id, "Customer ID");
 
-        Customer customer = Bookstore.getCustomer(c_id);
+        Customer customer = Bookstore.getCustomer(c_id)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
 
-        String name[] = new String[3];
+        String[] name = new String[2];
         name[0] = customer.getFname();
         name[1] = customer.getLname();
-        name[2] = customer.getUname();
         return name;
     }
 
     /**
      *
-     * @param C_ID
+     * @param c_id
      * @return
      */
-    public static String getUserName(int C_ID) {
-        return Bookstore.getCustomer(C_ID).getUname();
+    public static String getUserName(int c_id) {
+        Validator.notNegative(c_id, "Customer ID");
+        Customer customer = Bookstore.getCustomer(c_id)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
+
+        return customer.getUname();
     }
 
     /**
      *
-     * @param C_UNAME
+     * @param username
      * @return
      */
-    public static String getPassword(String C_UNAME) {
-        return Bookstore.getCustomer(C_UNAME).get().getPasswd();
+    public static String getPassword(String username) {
+        Validator.notEmpty(username, "username");
+        Customer customer = Bookstore.getCustomer(username)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
+        return customer.getPasswd();
 
     }
 
     /**
      *
-     * @param c_uname
+     * @param username
      * @return
      */
-    public static Order getMostRecentOrder(String c_uname) {
-        return Bookstore.getCustomer(c_uname).get().getMostRecentOrder();
+    public static Order getMostRecentOrder(String username) {
+        Validator.notEmpty(username, "username");
+        Customer customer = Bookstore.getCustomer(username)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
+        return customer.getMostRecentOrder();
     }
 
     /**
@@ -216,12 +232,12 @@ public class Bookmarket {
 
     /**
      *
-     * @param i_id
+     * @param bookId
      * @return
      */
-    public static Book getBook(int i_id) {
-
-        return Bookstore.getBook(i_id).get();
+    public static Book getBook(int bookId) {
+        Validator.notNegative(bookId, "bookId");
+        return Bookstore.getBook(bookId).orElseThrow(() -> new RuntimeException("Book ID not found"));
 
     }
 
@@ -231,7 +247,6 @@ public class Bookmarket {
      */
     public static Book getABookAnyBook() {
         return Bookstore.getABookAnyBook(random);
-
     }
 
     /**
@@ -240,6 +255,7 @@ public class Bookmarket {
      * @return
      */
     public static List<Book> doSubjectSearch(SUBJECTS search_key) {
+        Validator.notNull(search_key, "search key");
         return Bookstore.getBooksBySubject(search_key);
     }
 
@@ -249,6 +265,7 @@ public class Bookmarket {
      * @return
      */
     public static List<Book> doTitleSearch(String search_key) {
+        Validator.notNull(search_key, "search key");
         return Bookstore.getBooksByTitle(search_key);
     }
 
@@ -258,6 +275,7 @@ public class Bookmarket {
      * @return
      */
     public static List<Book> doAuthorSearch(String search_key) {
+        Validator.notNull(search_key, "search key");
         return Bookstore.getBooksByAuthor(search_key);
     }
 
@@ -267,6 +285,7 @@ public class Bookmarket {
      * @return
      */
     public static List<Book> getNewProducts(SUBJECTS subject) {
+        Validator.notNull(subject, "subject");
         return Bookstore.getNewBooks(subject);
     }
 
@@ -276,10 +295,11 @@ public class Bookmarket {
      * @return
      */
     public static List<Double> getCosts(Book book) {
-        return getBookstoreStream().
-                map(store -> store.getStock(book.getId())).
-                map(stock -> stock.getCost()).
-                collect(Collectors.toList());
+        Validator.notNull(book, "book");
+        return getBookstoreStream()
+                .map(store -> store.getStock(book.getId()))
+                .map(Stock::getCost)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -293,6 +313,7 @@ public class Bookmarket {
      * @return
      */
     public static Map<Book, Set<Stock>> getBestSellers(SUBJECTS subject) {
+        Validator.notNull(subject, "subject");
         return getBestSellers(subject, 100);
     }
 
@@ -307,15 +328,8 @@ public class Bookmarket {
      * @return
      */
     public static Map<Book, Set<Stock>> getBestSellers(SUBJECTS subject, int limit) {
-        if(subject == null){
-            throw new IllegalArgumentException("Subject cannot be null");
-        }
-        if(limit <= 0){
-            throw new IllegalArgumentException("Limit must be greater than zero");
-        }
-        if(limit > 100) {
-            throw new IllegalArgumentException("Limit cannot be greater than 100");
-        }
+        Validator.notNull(subject, "subject");
+        Validator.notOverrangeInclusive(limit, 1, 100, "limit");
 
         Map<Book, Integer> aggregateSales = new HashMap<>();
 
@@ -326,6 +340,10 @@ public class Bookmarket {
         });
 
         // Sort books by aggregated sales in descending order
+        return getBookSetMap(limit, aggregateSales);
+    }
+
+    private static Map<Book, Set<Stock>> getBookSetMap(int limit, Map<Book, Integer> aggregateSales) {
         List<Book> topBooks = new ArrayList<>(aggregateSales.keySet());
         topBooks.sort((b1, b2) -> aggregateSales.get(b2).compareTo(aggregateSales.get(b1)));
 
@@ -344,7 +362,6 @@ public class Bookmarket {
             });
             result.put(book, stocks);
         });
-
         return result;
     }
 
@@ -354,6 +371,7 @@ public class Bookmarket {
      * @return
      */
     public static List<Book> getRecommendationByItens(int c_id) {
+        Validator.notNegative(c_id, "Customer ID");
         return Bookstore.getRecommendationByItens(c_id);
     }
 
@@ -363,6 +381,7 @@ public class Bookmarket {
      * @return
      */
     public static List<Book> getRecommendationByUsers(int c_id) {
+        Validator.notNegative(c_id, "Customer ID");
         return Bookstore.getRecommendationByUsers(c_id);
     }
 
@@ -374,8 +393,9 @@ public class Bookmarket {
      * @return
      */
     public static Map<Book, Set<Stock>> getStocksRecommendationByUsers(int c_id) {
-        // to do
-        return null;
+        Validator.notNegative(c_id, "Customer ID");
+        // TODO
+        throw new NotImplementedException("Method not implemented yet");
     }
 
     /**
@@ -387,8 +407,9 @@ public class Bookmarket {
      * @return
      */
     public static Map<Book, Double> getPriceBookRecommendationByUsers(int c_id) {
-        // to do
-        return null;
+        Validator.notNegative(c_id, "Customer ID");
+        // TODO
+        throw new NotImplementedException("Method not implemented yet");
     }
 
     /**
@@ -397,6 +418,7 @@ public class Bookmarket {
      * @return
      */
     public static List<Stock> getStocks(final int idBook) {
+        Validator.notNegative(idBook, "Book ID");
         return getBookstoreStream()
                 .filter(store -> store.getStock(idBook) != null)
                 // transforma o stream de bookstore em stream de stock
@@ -411,21 +433,25 @@ public class Bookmarket {
      * @return
      */
     public static Stock getStock(final int idBookstore, final int idBook) {
+        Validator.notNegative(idBookstore, "Bookstore ID");
+        Validator.notNegative(idBook, "Book ID");
         return getBookstoreStream()
-                .filter(store -> store.getId() != idBookstore)
+                .filter(store -> store.getId() == idBookstore)
                 // transforma o stream de bookstore em stream de stock
                 .map(store -> store.getStock(idBook))
                 .findFirst()
-                .get();
+                .orElseThrow(() -> new IllegalArgumentException("No Stock for this combination of Bookstore and Book. " +
+                        "Bookstore ID: " + idBookstore + ". Book ID: " + idBook));
     }
 
     /**
      *
-     * @param i_id
+     * @param idBook
      * @return
      */
-    public static List<Book> getRelated(int i_id) {
-        Optional<Book> opt = Bookstore.getBook(i_id);
+    public static List<Book> getRelated(int idBook) {
+        Validator.notNegative(idBook, "Book ID");
+        Optional<Book> opt = Bookstore.getBook(idBook);
         if (!opt.isPresent()) {
             return new ArrayList<>();
         }
@@ -838,7 +864,7 @@ public class Bookmarket {
          */
         @Override
         public Object executeOnBookstore(Stream<Bookstore> bookstore) {
-            Bookstore.updateBook(bId, image, thumbnail, now);
+            Bookstore.updateBook(bId, cost, image, thumbnail, now);
             return null;
         }
     }

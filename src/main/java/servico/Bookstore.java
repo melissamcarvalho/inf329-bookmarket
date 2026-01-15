@@ -236,14 +236,16 @@ public class Bookstore implements Serializable {
     /**
      Returns a customer by their ID.
      */
-    public static Customer getCustomer(int cId) {
-        return customersById.get(cId);
+    public static Optional<Customer> getCustomer(int cId) {
+        Validator.notNegative(cId, "Customer ID");
+        return Optional.ofNullable(customersById.get(cId));
     }
 
     /**
     Returns a customer by their usernamex.
      */
     public static Optional<Customer> getCustomer(String username) {
+        Validator.notEmpty(username, "Username");
         return Optional.ofNullable(customersByUsername.get(username));
     }
 
@@ -251,6 +253,7 @@ public class Bookstore implements Serializable {
      Returns a random customer.
      */
     private Customer getACustomerAnyCustomer(Random random) {
+        Validator.notNull(random, "Random");
         return customersById.get(random.nextInt(customersById.size()));
     }
 
@@ -292,11 +295,10 @@ public class Bookstore implements Serializable {
     Set new login time and new expiration time for an active customer.
      */
     public static void refreshCustomerSession(int cId, long now) {
-        Customer customer = getCustomer(cId);
-        if (customer != null) {
-            customer.setLogin(new Date(now));
-            customer.setExpiration(new Date(now + 7200000 /* 2 hours */));
-        }
+        Validator.notNegative(cId, "Customer ID");
+        Customer customer = getCustomer(cId).orElseThrow(() -> new RuntimeException("Customer ID not found"));
+        customer.setLogin(new Date(now));
+        customer.setExpiration(new Date(now + 7200000 /* 2 hours */));
     }
 
     /**
@@ -539,13 +541,20 @@ public class Bookstore implements Serializable {
      * @param thumbnail
      * @param now
      */
-    public static void updateBook(int bId, String image, String thumbnail, long now) {
+    public static void updateBook(int bId, double cost, String image, String thumbnail, long now) {
+        Validator.notNegative(bId, "Book ID");
+        Validator.notNegative(cost, "Book cost");
+        Validator.notEmpty(image, "Image");
+        Validator.notEmpty(thumbnail, "Thumbnail");
+        Validator.notNegative(now, "now");
+
         Optional<Book> opt = getBook(bId);
         if (!opt.isPresent()) {
             throw new IllegalStateException("Book ID is incorrect.");
         }
 
         Book book = opt.get();
+        book.setSrp(cost);
         book.setImage(image);
         book.setThumbnail(thumbnail);
         book.setPubDate(new Date(now));
@@ -684,7 +693,7 @@ public class Bookstore implements Serializable {
     public Order confirmBuy(int customerId, int cartId, String comment,
             CreditCards ccType, long[] ccNumber, String ccName, Date ccExpiry,
             ShipTypes shipping, Date shippingDate, int addressId, long now, StatusTypes status) {
-        Customer customer = getCustomer(customerId);
+        Customer customer = getCustomer(customerId).orElseThrow(() -> new RuntimeException("Customer ID not found"));
         Cart cart = getCart(cartId);
         Address shippingAddress = customer.getAddress();
         if (addressId != -1) {
@@ -996,6 +1005,7 @@ public class Bookstore implements Serializable {
     }
 
     void populateInstanceBookstore(int orders, int stocks, int evaluations, Random rand, long now) {
+        System.out.println("Populating bookstore instance. ID: " + this.id);
         populateOrders(orders, rand, now);
         populateStocks(stocks, rand, now);
         populateEvaluation(evaluations, rand);
@@ -1091,7 +1101,7 @@ public class Bookstore implements Serializable {
             if (i % 10000 == 0) {
                 System.out.print(".");
             }
-            Order order = this.getOrdersById().get(i);
+            Order order = this.getOrdersById().get(rand.nextInt(this.getOrdersById().size()));
 
             Customer customer = order.getCustomer();
 
