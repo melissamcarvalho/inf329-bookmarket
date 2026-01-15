@@ -23,11 +23,11 @@ import static org.junit.Assert.*;
  */
 public class BookmarketTest {
 
-    long seed = 0;
-    Bookstore[] bookstores;
+    static long seed = 0;
+    static Bookstore[] bookstores;
 
-    private Book topSellerBook;
-    private Book secondSellerBook;
+    private static Book topSellerBook;
+    private static Book secondSellerBook;
 
     @Before
     /**
@@ -37,7 +37,8 @@ public class BookmarketTest {
      * populando cada instância do Bookstore com dados diferentes, garantindo
      * assim o funcionamento correto dos métodos do bestseller.
      */
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         long now = System.currentTimeMillis();
 
         int items = 500;

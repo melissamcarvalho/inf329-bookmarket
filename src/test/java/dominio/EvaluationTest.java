@@ -2,6 +2,7 @@ package dominio;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -9,12 +10,12 @@ import java.util.Date;
 
 public class EvaluationTest {
 
-    private Customer customer;
-    private Book book;
-    private Evaluation evaluation;
+    private static Customer customer;
+    private static Book book;
+    private static Evaluation evaluation;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         // Setup de dependências mínimas para o teste
         Date now = new Date();
         Country country = new Country(1, "Brasil", "BRL", 1.0);
