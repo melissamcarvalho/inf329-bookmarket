@@ -53,7 +53,6 @@ package servico;
  ************************************************************************/
 
 import dominio.*;
-import jdk.internal.joptsimple.util.KeyValuePair;
 import recommendation.*;
 import util.TPCW_Util;
 import util.Validator;
