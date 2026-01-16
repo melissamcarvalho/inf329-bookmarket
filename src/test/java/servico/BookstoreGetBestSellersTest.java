@@ -72,7 +72,7 @@ public class BookstoreGetBestSellersTest {
         Cart cart = instance.createCart(System.currentTimeMillis());
         Customer customer = Bookstore.getCustomer(1).orElseThrow(() -> new IllegalArgumentException("Customer ID invalid."));
         Order order = instance.confirmBuy(customer.getId(), cart.getId(), "test",
-                CreditCards.VISA, 1234567890123456L, "tester", new Date(), ShipTypes.AIR,
+                CreditCards.VISA, new long[]{1234, 5678, 9012, 3456}, "tester", new Date(), ShipTypes.AIR,
                 new Date(), customer.getAddress().getId(), System.currentTimeMillis(), StatusTypes.SHIPPED);
 
         // Mutate the order to add an OrderLine with null book (simulates malformed data)
