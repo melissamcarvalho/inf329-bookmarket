@@ -54,19 +54,23 @@ package dominio;
  * you give them.
  *
  ************************************************************************/
+import util.Validator;
+
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * *<img src="./doc-files/CCTransaction.png" alt="CCTransaction">
- * <br><a href="./doc-files/CCTransaction.html"> code </a>
+ * Represents a credit card transaction record within the system.
+ * This class is a finalized record of a payment attempt, including authorization and
+ * origin details. It is designed to be immutable to preserve financial history.
+ * <br><img src="./doc-files/CCTransaction.png" alt="CCTransaction Diagram">
  */
 public class CCTransaction implements Serializable {
 
     private static final long serialVersionUID = 5470177450411822726L;
 
     private final CreditCards type;
-    private final long num;
+    private final long[] num;
     private final String name;
     private final Date expire;
     private final String authId;
@@ -75,26 +79,34 @@ public class CCTransaction implements Serializable {
     private final Country country;
 
     /**
-     *
-     * @param type
-     * @param num
-     * @param name
-     * @param expire
-     * @param authId
-     * @param amount
-     * @param date
-     * @param country
+     * Constructs a validated and immutable Credit Card Transaction record.
+     * @param type The credit card brand/type. Must not be null.
+     * @param num The credit card number.
+     * @param name The cardholder's name. Must not be null or empty.
+     * @param expire The card's expiration date. Must not be null.
+     * @param authId The authorization ID. Must not be null.
+     * @param amount The transaction amount. Must be non-negative.
+     * @param date The timestamp of the transaction. Must not be null.
+     * @param country The country of origin. Must not be null.
+     * @throws NullPointerException if any required parameter is null.
+     * @throws IllegalArgumentException if amount is negative or name is empty.
      */
-    public CCTransaction(CreditCards type, long num, String name, Date expire,
+    public CCTransaction(
+            CreditCards type, long[] num, String name, Date expire,
             String authId, double amount, Date date, Country country) {
-        this.type = type;
+        this.type = Validator.notNull(type, "type");
+        this.name = Validator.notEmpty(name, "name");
+        this.authId = Validator.notEmpty(authId, "authId");
+        this.country = Validator.notNull(country, "country");
+        this.amount = Validator.notNegative(amount, "amount");
+        this.expire = new Date(Validator.notNull(expire, "expire").getTime());
+        this.date = new Date(Validator.notNull(date, "date").getTime());
+
+        Validator.notNull(num, "num");
+        if (num.length != 4) {
+            throw new IllegalArgumentException("CC Card number should be an array with length 4");
+        }
         this.num = num;
-        this.name = name;
-        this.expire = expire;
-        this.authId = authId;
-        this.amount = amount;
-        this.date = date;
-        this.country = country;
     }
 
     /**
@@ -109,7 +121,7 @@ public class CCTransaction implements Serializable {
      *
      * @return
      */
-    public long getNum() {
+    public long[] getNum() {
         return num;
     }
 

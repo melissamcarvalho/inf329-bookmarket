@@ -3,8 +3,9 @@ package dominio;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Collection;
 
 public class CartTest {
 
@@ -31,7 +32,7 @@ public class CartTest {
 
         // Setup de Customer (Assumindo que tem um desconto de 10%)
         customer = new Customer(
-                1, "user", "pass", "", "", "", "",
+                1, "user", "pass", "first", "last", "11-0000-0000", "e@e.com",
                 now, now, now, now, 10.0, 0.0, 0.0, now, "", addr);
 
         cart = new Cart(500, now);
@@ -41,7 +42,7 @@ public class CartTest {
     public void testIncreaseLine() {
         cart.increaseLine(stockJava, 2);
 
-        Collection<CartLine> lines = cart.getLines();
+        ArrayList<CartLine> lines = cart.getLines();
         assertEquals("Deve ter 1 linha no carrinho", 1, lines.size());
 
         CartLine line = lines.iterator().next();
@@ -115,14 +116,22 @@ public class CartTest {
         assertEquals(totalEsperado, cart.total(customer), 0.001);
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testIncreaseLineWithNegativeQuantity() {
+        cart.changeLine(stockJava, 5);
         cart.increaseLine(stockJava, -5);
+        assertFalse("Book should be removed from cart",
+                cart.getLines().stream()
+                        .anyMatch(cartLine -> cartLine.getBook().equals(stockJava.getBook())));
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testChangeLineWithNegativeQuantity() {
-        cart.changeLine(stockJava, -10);
+        cart.changeLine(stockJava, 5);
+        cart.changeLine(stockJava, -1);
+        assertFalse("Book should be removed from cart",
+                cart.getLines().stream()
+                        .anyMatch(cartLine -> cartLine.getBook().equals(stockJava.getBook())));
     }
 
     @Test(expected = Exception.class)

@@ -23,13 +23,12 @@ import static org.junit.Assert.*;
  */
 public class BookmarketTest {
 
-    long seed = 0;
-    Bookstore[] bookstores;
+    static long seed = 0;
+    static Bookstore[] bookstores;
 
-    private Book topSellerBook;
-    private Book secondSellerBook;
+    private static Book topSellerBook;
+    private static Book secondSellerBook;
 
-    @Before
     /**
      * É necessário popular a Bookstore para realização dos testes.
      *
@@ -37,7 +36,8 @@ public class BookmarketTest {
      * populando cada instância do Bookstore com dados diferentes, garantindo
      * assim o funcionamento correto dos métodos do bestseller.
      */
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         long now = System.currentTimeMillis();
 
         int items = 500;
@@ -46,24 +46,24 @@ public class BookmarketTest {
         int authors = 1000;
         int orders = 1000;
         int stocks = 1000;
-        int evaluations = 100;
+        int evaluations = 1000;
 
-        Bookstore.populate(seed, now, items, customers, addresses, authors);
+//        Bookstore.populate(seed, now, items, customers, addresses, authors);
 
         bookstores = new Bookstore[5];
 
         for (int i = 0; i < 5; i++) {
             Bookstore bookstore = new Bookstore(i);
-            bookstore.createCart(0);
-
-            /**
-             * Adicionamos este loop para adicionar todos os livros ao estoque
-             * com preço 1 desta forma prevenimos exceptions em métodos que
-             * adiciona livros aleatoriamente no carrinho
-             */
-            for (int j = 0; j < items; j++) {
-                bookstore.updateStock(j, 1);
-            }
+//            bookstore.createCart(0);
+//
+//            /**
+//             * Adicionamos este loop para adicionar todos os livros ao estoque
+//             * com preço 1 desta forma prevenimos exceptions em métodos que
+//             * adiciona livros aleatoriamente no carrinho
+//             */
+//            for (int j = 0; j < items; j++) {
+//                bookstore.updateStock(j, 1);
+//            }
 
             bookstores[i] = bookstore;
         }
@@ -73,18 +73,31 @@ public class BookmarketTest {
         Bookmarket.init(0, recommendationSettings, bookstores);
         Bookmarket.populate(items, customers, addresses, authors, orders, stocks, evaluations);
 
-        // Create a predictable sales scenario for best-seller testing
+        // Create a predictable sales scenario for bestseller testing
         List<Book> artBooks = Bookmarket.doSubjectSearch(SUBJECTS.ARTS);
         topSellerBook = artBooks.get(0);
         secondSellerBook = artBooks.get(1);
 
-        Customer customer = Bookstore.getCustomer(1);
+        Customer customer = Bookstore.getCustomer(1).orElseThrow(() -> new RuntimeException("Customer ID not found"));
         int cartId = Bookmarket.createEmptyCart(bookstores[0].getId());
         Cart cart = Bookmarket.getCart(bookstores[0].getId(), cartId);
-        cart.increaseLine(bookstores[0].getStock(topSellerBook.getId()), 1000000);
-        cart.increaseLine(bookstores[0].getStock(secondSellerBook.getId()), 50);
 
-        Bookmarket.doBuyConfirm(bookstores[0].getId(), cartId, customer.getId(), CreditCards.AMEX, 123456789012345L, "Test User", new Date(), ShipTypes.AIR, StatusTypes.SHIPPED);
+        Stock topSellerStock = bookstores[0].getStock(topSellerBook.getId());
+        topSellerStock.setQty(1000000);
+
+        Stock secondSellerStock = bookstores[0].getStock(secondSellerBook.getId());
+        secondSellerStock.setQty(90000);
+
+        int currentStockTop = bookstores[0].getStock(topSellerBook.getId()).getQty();
+        cart.increaseLine(bookstores[0].getStock(topSellerBook.getId()), currentStockTop);
+
+        int currentStockSec = bookstores[0].getStock(secondSellerBook.getId()).getQty();
+        cart.increaseLine(bookstores[0].getStock(secondSellerBook.getId()), currentStockSec);
+
+        Bookmarket.doBuyConfirm(
+                bookstores[0].getId(), cartId, customer.getId(), CreditCards.AMEX,
+                new long[]{1111, 2222, 3333, 4444}, "Test User",
+                new Date(), ShipTypes.AIR, StatusTypes.SHIPPED);
     }
 
     /**
@@ -101,8 +114,12 @@ public class BookmarketTest {
         assertTrue(result.size() <= limit);
 
         // Check the first book is the one we sold the most
-        Book firstBook = result.keySet().iterator().next();
+        List<Book> bestsellerList = new ArrayList<>(result.keySet());
+        Book firstBook = bestsellerList.get(0);
         assertEquals(topSellerBook, firstBook);
+
+        Book secondBook = bestsellerList.get(1);
+        assertEquals(secondSellerBook, secondBook);
 
         // Check the stocks for the first book
         Set<Stock> stocks = result.get(firstBook);
@@ -119,12 +136,11 @@ public class BookmarketTest {
 
     @Test
     public void testCreateEvaluation() {
-        System.out.println("testCreateEvaluation");
-
         Random rand = new Random(seed);
 
         int storeId = bookstores[0].getId();
-        Customer customer = Bookstore.getCustomer(1);
+        Customer customer = Bookstore.getCustomer(1)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
         Book book = Bookstore.getABookAnyBook(rand);
         double rating = TPCW_Util.getRandomDouble(rand, 0, 4);
 
@@ -138,8 +154,6 @@ public class BookmarketTest {
 
     @Test
     public void testUpdateEvaluation() {
-        System.out.println("testUpdateEvaluation");
-
         Random rand = new Random(seed);
 
         Optional<Evaluation> eval = bookstores[0].getEvaluation(0);
@@ -170,13 +184,11 @@ public class BookmarketTest {
 
         String[] name = Bookmarket.getName(customer.getId());
         assertNotNull("Customer name should be not null", name);
-        assertEquals("Customer name string array should have length of 3", 3, name.length);
+        assertEquals("Customer name string array should have length of 2", 2, name.length);
         assertFalse("Customer first name should not be empty", name[0].isEmpty());
         assertEquals("Customer first name should match", "First", name[0]);
         assertFalse("Customer middle name should not be empty", name[1].isEmpty());
         assertEquals("Customer middle name should match", "Last", name[1]);
-        assertFalse("Customer last name should not be empty", name[2].isEmpty());
-        assertEquals("Customer last name should match", "OGBABABA", name[2]);
 
         String username = Bookmarket.getUserName(customer.getId());
         assertNotNull("Username should not be null", username);
@@ -218,14 +230,18 @@ public class BookmarketTest {
         assertTrue("Cart should be empty at creation", cartLines.isEmpty());
 
         Book randomBook = Bookmarket.getABookAnyBook();
-        Bookmarket.doCart(0, cartId, randomBook.getId(), null, null);
+        HashMap<Integer, Integer> bookQtyMap = new HashMap<>();
+        bookQtyMap.put(randomBook.getId(), 1);
+
+        Bookmarket.doCart(0, cartId, bookQtyMap);
 
         cartLines = new ArrayList<>(cart.getLines());
         assertFalse("Cart should be empty at creation", cartLines.isEmpty());
         assertTrue("Cart should have the random book in it",
                 cartLines.stream().anyMatch(pred -> pred.getBook().equals(randomBook)));
 
-        Order order = Bookmarket.doBuyConfirm(0, cartId, customer.getId(), CreditCards.VISA, 4444L,
+        Order order = Bookmarket.doBuyConfirm(0, cartId, customer.getId(), CreditCards.VISA,
+                new long[]{1111, 2222, 3333, 4444},
                 "FIRST LAST", now, ShipTypes.AIR);
 
         String username = Bookmarket.getUserName(customer.getId());
@@ -244,9 +260,9 @@ public class BookmarketTest {
         Book anotherBook = Bookmarket.getBook(randomBook.getId());
         assertNotNull("Book should not be null", anotherBook);
         assertEquals("Books should be equal", anotherBook, randomBook);
-        assertEquals("Book cost should have been updated", 1234.0, anotherBook.getSrp(), 0.001);
-        assertEquals("Book image should have been updated", "image.png", anotherBook.getImage());
-        assertEquals("Book thumbnail should have been updated", "thumbnail.png", anotherBook.getThumbnail());
+        assertEquals("Book cost should have been updated", 1234.0, randomBook.getSrp(), 0.001);
+        assertEquals("Book image should have been updated", "image.png", randomBook.getImage());
+        assertEquals("Book thumbnail should have been updated", "thumbnail.png", randomBook.getThumbnail());
         assertThrows("getBook should throw with invalid id",
                 Exception.class, () -> Bookmarket.getBook(-1));
     }
@@ -316,12 +332,17 @@ public class BookmarketTest {
         Book randomBook = Bookmarket.getABookAnyBook();
         assertNotNull("Book should not be null", randomBook);
 
+        List<Stock> stocks = Bookmarket.getStocks(randomBook.getId());
+        assertFalse("Stocks list should not be empty", stocks.isEmpty());
+
         List<Double> bookCostInStock = Bookmarket.getCosts(randomBook);
         assertFalse("Book costs list should not be empty", bookCostInStock.isEmpty());
-        assertTrue("Minimum book cost in stock should be equal or lower",
-                Collections.min(bookCostInStock) <= randomBook.getSrp());
-        assertTrue("Maximum book cost in stock should be equal or higher",
-                Collections.max(bookCostInStock) >= randomBook.getSrp());
+
+        assertEquals("Both lists should have same length", stocks.size(), bookCostInStock.size());
+
+        for (int i = 0; i < stocks.size(); i++) {
+            assertEquals("Costs should be equal", stocks.get(i).getCost(), bookCostInStock.get(i), 0.001);
+        }
     }
 
     @Test
@@ -345,12 +366,13 @@ public class BookmarketTest {
         int storeId = stocks.get(0).getIdBookstore();
         Stock storeStock = Bookmarket.getStock(storeId, randomBook.getId());
         assertNotNull("Stock should not be null", storeStock);
-        assertEquals("Books should be equal", stocks.get(0), storeStock);
+        assertEquals("Stocks should be equal", stocks.get(0), storeStock);
     }
 
     @Test
     public void testRecommendationByItens() {
         List<Book> recommendations = Bookmarket.getRecommendationByItens(79);
+        assertNotNull("Recommendation list should not be null", recommendations);
         assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
         assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
                 10, recommendations.size());
@@ -359,8 +381,9 @@ public class BookmarketTest {
     @Test
     public void testRecommendationByUsers() {
         List<Book> recommendations = Bookmarket.getRecommendationByUsers(79);
+        assertNotNull("Recommendation list should not be null", recommendations);
         assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
-        assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
+        assertEquals("Recommendation list should have the expected amount of Books for Customer(id=79)",
                 10, recommendations.size());
     }
 

@@ -21,7 +21,7 @@ public class OrderLineTest {
 
         testBook = new Book(1, "Test Book", now, "Publisher", SUBJECTS.ARTS,
                 "Desc", "t", "i", 100.0, now, "ISBN", 200,
-                BACKINGS.PAPERBACK, new int[]{1,1}, 0.5, author);
+                BACKINGS.PAPERBACK, new int[]{1,1,1}, 0.5, author);
 
         line = new OrderLine(testBook, 3, 10.0, "Special gift wrapping");
     }

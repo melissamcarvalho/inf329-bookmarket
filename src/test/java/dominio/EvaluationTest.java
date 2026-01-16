@@ -2,22 +2,35 @@ package dominio;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.Calendar;
 import java.util.Date;
 
 public class EvaluationTest {
 
-    private Customer customer;
-    private Book book;
-    private Evaluation evaluation;
+    private static Customer customer;
+    private static Book book;
+    private static Evaluation evaluation;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         // Setup de dependências mínimas para o teste
         Date now = new Date();
-        Address addr = new Address(1, "Main St", "101", "NY", "NY", "10001", null);
+        Country country = new Country(1, "Brasil", "BRL", 1.0);
+        Address addr = new Address(1, "Main St", "101", "NY", "NY", "10001", country);
         customer = new Customer(1, "jdoe", "pass", "John", "Doe", "123", "j@d.com", now, now, now, now, 0, 0, 0, now, "data", addr);
-        book = new Book(1, "Quality Code", now, "Tech", SUBJECTS.ARTS, "Desc", "t", "i", 50.0, now, "ISBN", 100, BACKINGS.HARDBACK, new int[]{1,1}, 0.5, null);
+
+        Author author = new Author(
+                "Isaac",
+                "Yudick",
+                "Asimov",
+                new Date(),
+                "Escritor de ficção científica com mais de 20 obras publicadas."
+        );
+
+        book = new Book(1, "Quality Code", now, "Tech", SUBJECTS.ARTS, "Desc", "t", "i", 50.0, now, "ISBN", 100, BACKINGS.HARDBACK, new int[]{1,1,1}, 0.5, author);
 
         evaluation = new Evaluation(100, customer, book, 4.5);
     }

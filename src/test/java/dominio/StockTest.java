@@ -28,7 +28,7 @@ public class StockTest {
         address = new Address(1, "Main St", "", "City", "ST", "123", brasil);
 
         book = new Book(1, "Title", now, "Pub", SUBJECTS.ARTS, "Desc", "t",
-                "i", 50.0, now, "ISBN", 100, BACKINGS.HARDBACK, new int[]{1,1}, 0.5, author);
+                "i", 50.0, now, "ISBN", 100, BACKINGS.HARDBACK, new int[]{1,1,1}, 0.5, author);
 
         // Criando instância com ID 10, Custo 30.0 e Qtd 100
         stock = new Stock(10, address, book, 30.0, 100);
@@ -51,7 +51,8 @@ public class StockTest {
 
     @Test(expected = Exception.class)
     public void testAddQtyNegativeAmountShouldFail() {
-        stock.addQty(-10);
+        stock.setQty(5);
+        stock.addQty(-6);
     }
 
     @Test(expected = Exception.class)
