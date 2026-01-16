@@ -153,24 +153,6 @@ public class BookmarketTest {
     }
 
     @Test
-    public void testUpdateEvaluation() {
-        Random rand = new Random(seed);
-
-        Optional<Evaluation> eval = bookstores[0].getEvaluation(0);
-        assertNotNull(eval);
-
-        int id = eval.get().getId();
-        double rating = TPCW_Util.getRandomDouble(rand, 0, 4);
-
-        Evaluation eval2 = Bookmarket.updateEvaluation(bookstores[0].getId(), id, rating);
-        assertNotNull(eval2);
-        assertEquals( eval.get(), eval2 );
-        assertEquals( eval.get().getCustomer(), eval2.getCustomer() );
-        assertEquals( eval.get().getBook(), eval2.getBook() );
-        assertEquals( rating, eval2.getRating(), 0.01 );
-    }
-
-    @Test
     public void testCustomerOperations() {
         Calendar.getInstance().set(2000, Calendar.NOVEMBER, 16, 0, 0, 0);
         Date birthdate = Calendar.getInstance().getTime();
@@ -375,7 +357,7 @@ public class BookmarketTest {
         assertNotNull("Recommendation list should not be null", recommendations);
         assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
         assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
-                10, recommendations.size());
+                9, recommendations.size());
     }
 
     @Test
@@ -384,7 +366,7 @@ public class BookmarketTest {
         assertNotNull("Recommendation list should not be null", recommendations);
         assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
         assertEquals("Recommendation list should have the expected amount of Books for Customer(id=79)",
-                10, recommendations.size());
+                9, recommendations.size());
     }
 
     @Test

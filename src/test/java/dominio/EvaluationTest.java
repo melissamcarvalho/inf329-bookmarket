@@ -43,12 +43,6 @@ public class EvaluationTest {
         assertEquals(4.5, evaluation.getRating(), 0.001);
     }
 
-    @Test
-    public void testSetRatingUpdatesValue() {
-        evaluation.setRating(5.0);
-        assertEquals(5.0, evaluation.getRating(), 0.001);
-    }
-
     @Test(expected = Exception.class)
     public void testConstructorShouldFailWithNullBook() {
         new Evaluation(100, customer, null, 4.5);

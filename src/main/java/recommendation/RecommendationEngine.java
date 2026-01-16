@@ -3,11 +3,11 @@ package recommendation;
 import dominio.Customer;
 import dominio.Evaluation;
 import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray;
-import recommendation.mahout.BaseMahoutRecommender;
+import recommendation.mahout.MahoutEvaluation;
 import recommendation.mahout.UserBasedMahoutRecommender;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
 import org.apache.mahout.cf.taste.impl.model.GenericDataModel;
@@ -15,26 +15,29 @@ import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
 
 public class RecommendationEngine {
+    private List<MahoutEvaluation> mahoutEvaluations;
+
     private final UserBasedMahoutRecommender userBasedMahoutRecommender;
     // private final BaseMahoutRecommender itemBasedMahoutRecommender;
-    private List<Evaluation> evaluations;
     
     /**
      * Acts as an Adapter for Evaluation to the DataModel Mahout expects as input.
      * @param evaluations List of evaluation to be loaded as Model
+     * @param settings Recommendation engine settings
      */
     public RecommendationEngine(List<Evaluation> evaluations, RecommendationSettings settings) {
-        this.evaluations = evaluations;
+        this.mahoutEvaluations = buildMahoutEvaluations(evaluations);
 
-        DataModel mahoutUserDataModel = buildMahoutUserDataModel();
-        userBasedMahoutRecommender = new UserBasedMahoutRecommender(settings, mahoutUserDataModel);
+        DataModel mahoutDataModel = buildMahoutDataModel();
 
+        userBasedMahoutRecommender = new UserBasedMahoutRecommender(settings, mahoutDataModel);
         // itemBasedMahoutRecommender = new ItemBasedMahoutRecommender(settings, mahoutDataModel);
     }
 
     /**
+     * Set Recommendation Engine Settings
      * 
-     * @param settings 
+     * @param settings Recommendation engine settings
      */
     public void setSettings(final RecommendationSettings settings) {
         userBasedMahoutRecommender.setSettings(settings);
@@ -43,46 +46,36 @@ public class RecommendationEngine {
 
     /**
      * Refresh Mahout DataModel with new Evaluations
+     * 
      * @param evaluations List of evaluation to be refreshed as Mahout Model
      */
     public void refreshModel(List<Evaluation> evaluations) {
-        this.evaluations = evaluations;
+        this.mahoutEvaluations = buildMahoutEvaluations(evaluations);
 
-        DataModel mahoutUserDataModel = buildMahoutUserDataModel();
-        this.userBasedMahoutRecommender.refresh(mahoutUserDataModel);
+        DataModel mahoutDataModel = buildMahoutDataModel();
 
+        this.userBasedMahoutRecommender.refresh(mahoutDataModel);
         // this.itemBasedMahoutRecommender.refresh(mahoutDataModel);
     }
 
-    private DataModel buildMahoutUserDataModel() {
-        Map<Customer, Set<Evaluation>> evaluationsByCustomer = new HashMap<>();
-        this.evaluations.forEach(evaluation -> {
-            Customer customer = evaluation.getCustomer();
-            if(!evaluationsByCustomer.containsKey(customer)) {
-                evaluationsByCustomer.put(customer, new HashSet<>());
-            }
+    private List<MahoutEvaluation> buildMahoutEvaluations(List<Evaluation> evaluations) {
+        return evaluations
+                .stream()
+                .map(MahoutEvaluation::new)
+                .collect(Collectors.toList());
+    }
 
-            evaluationsByCustomer.get(customer).add(evaluation);
-        });
+    private DataModel buildMahoutDataModel() {
+        Map<Customer, List<MahoutEvaluation>> evaluationsByCustomer = this.mahoutEvaluations
+            .stream()
+            .collect(Collectors.groupingBy(Evaluation::getCustomer, Collectors.toList()));
 
-        FastByIDMap<PreferenceArray> userData =  new FastByIDMap<>();
+        FastByIDMap<PreferenceArray> customerPreferences =  new FastByIDMap<>();
         evaluationsByCustomer.forEach((customer, customerEvaluations) -> {
-            PreferenceArray customerPreferences = new GenericUserPreferenceArray(customerEvaluations.size());
-
-            AtomicInteger preferenceIndex = new AtomicInteger();
-            customerEvaluations.forEach(evaluation -> {
-                int index = preferenceIndex.get();
-                customerPreferences.setItemID(index, evaluation.getBook().getId());
-                customerPreferences.setValue(index, (float) evaluation.getRating());
-                customerPreferences.setUserID(index, customer.getId());
-
-                preferenceIndex.getAndIncrement();
-            });
-
-            userData.put(customer.getId(), customerPreferences);
+            customerPreferences.put(customer.getId(), new GenericUserPreferenceArray(customerEvaluations));
         });
         
-        return new GenericDataModel(userData);
+        return new GenericDataModel(customerPreferences);
     }
 
     /**

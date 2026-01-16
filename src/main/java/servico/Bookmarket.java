@@ -647,16 +647,6 @@ public class Bookmarket {
         }
     }
 
-    public static Evaluation updateEvaluation(int storeId, int evaluationId, double rating) {
-        try {
-            return (Evaluation) stateMachine.execute(
-                    new UpdateEvaluationAction(storeId, evaluationId, rating)
-            );
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private static String randomComment() {
         return TPCW_Util.getRandomString(random, 20, 100);
     }
@@ -1037,37 +1027,6 @@ public class Bookmarket {
                     .findFirst()
                     .get()
                     .createEvaluation(this.customerId, this.bookId, this.rating);
-        }
-    }
-
-    protected static class UpdateEvaluationAction extends BookstoreAction {
-
-        private static final long serialVersionUID = -3526897466225576356L;
-
-        int storeId;
-        int evaluationId;
-        double rating;
-
-        /**
-         *
-         * @param storeId
-         * @param evaluationId
-         * @param rating
-         */
-        public UpdateEvaluationAction(int storeId, int evaluationId, double rating) {
-            this.storeId = storeId;
-            this.evaluationId = evaluationId;
-            this.rating = rating;
-        }
-
-        @Override
-        public Object executeOnBookstore(Stream<Bookstore> bookstore) {
-            return bookstore
-                    .filter(bs -> bs.getId() == this.storeId)
-                    .findFirst()
-                    .get()
-                    .updateEvaluation(evaluationId, rating)
-                    .get();
         }
     }
 

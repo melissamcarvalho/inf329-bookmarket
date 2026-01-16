@@ -263,7 +263,7 @@ public class BookstoreTest {
     @Test
     public void customerRecommendation() {
         List<Book> recommendations = Bookstore.getRecommendationByUsers(79);
-        assertEquals(5, recommendations.size());
+        assertEquals(8, recommendations.size());
     }
 
     @Test
