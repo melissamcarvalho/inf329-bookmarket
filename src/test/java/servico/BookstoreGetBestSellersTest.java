@@ -70,7 +70,7 @@ public class BookstoreGetBestSellersTest {
 
         // create an empty cart and confirm a shipped order (no real lines)
         Cart cart = instance.createCart(System.currentTimeMillis());
-        Customer customer = Bookstore.getCustomer(1);
+        Customer customer = Bookstore.getCustomer(1).orElseThrow(() -> new IllegalArgumentException("Customer ID invalid."));
         Order order = instance.confirmBuy(customer.getId(), cart.getId(), "test",
                 CreditCards.VISA, 1234567890123456L, "tester", new Date(), ShipTypes.AIR,
                 new Date(), customer.getAddress().getId(), System.currentTimeMillis(), StatusTypes.SHIPPED);
