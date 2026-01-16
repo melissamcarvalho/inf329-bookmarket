@@ -6,7 +6,7 @@ package dominio;
  *
  ************************************************************************
  *
- * This is part of the the Java TPC-W distribution,
+ * This is part of the Java TPC-W distribution,
  * written by Harold Cain, Tim Heil, Milo Martin, Eric Weglarz, and Todd
  * Bezenek.  University of Wisconsin - Madison, Computer Sciences
  * Dept. and Dept. of Electrical and Computer Engineering, as a part of
@@ -54,11 +54,14 @@ package dominio;
  * you give them.
  *
  ************************************************************************/
+import util.Validator;
+
 import java.io.Serializable;
 
 /**
- * *<img src="./doc-files/CartLine.png" alt="CartLine">
- * <br><a href="./doc-files/CartLine.html"> code </a>
+ * Represents a single line item within a shopping cart.
+ * Links a specific {@link Stock} item with a requested quantity.
+ * <br><img src="./doc-files/CartLine.png" alt="CartLine Diagram">
  */
 public class CartLine implements Serializable {
 
@@ -68,42 +71,43 @@ public class CartLine implements Serializable {
     private final Stock stock;
 
     /**
-     *
-     * @param qty
-     * @param stock
+     * Constructs a new CartLine with validation.
+     * @param qty The quantity of the item. Must be zero or positive.
+     * @param stock The stock item being added. Must not be null.
+     * @throws IllegalArgumentException if qty is negative.
+     * @throws NullPointerException if stock is null.
      */
     public CartLine(int qty, Stock stock) {
-        this.qty = qty;
-        this.stock = stock;
+        this.qty = Validator.notNegative(qty, "qty");
+        this.stock = Validator.notNull(stock, "stock");
     }
 
     /**
-     *
-     * @param qty
+     * Updates the quantity of this line item.
+     * @param qty The new quantity. Must be zero or positive.
+     * @throws IllegalArgumentException if qty is negative.
      */
     public void setQty(int qty) {
-        this.qty = qty;
+        this.qty = Validator.notNegative(qty, "qty");
     }
 
     /**
-     *
-     * @return
+     * @return The current quantity.
      */
     public int getQty() {
         return qty;
     }
 
     /**
-     *
-     * @return
+     * Helper method to retrieve the book associated with this cart line.
+     * @return The {@link Book} instance from the associated stock.
      */
     public Book getBook() {
         return stock.getBook();
     }
 
     /**
-     * 
-     * @return 
+     * @return The associated {@link Stock} item.
      */
     public Stock getStock() {
         return stock;

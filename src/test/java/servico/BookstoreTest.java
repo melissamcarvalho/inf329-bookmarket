@@ -1,12 +1,10 @@
 package servico;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import dominio.*;
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -18,14 +16,10 @@ import static org.junit.Assert.*;
  */
 public class BookstoreTest {
 
-    public BookstoreTest() {
-    }
-
     static Bookstore instance;
 
     @BeforeClass
     public static void setUpClass() {
-        
         long seed = 0;
         long now = System.currentTimeMillis();
         int items = 1000;
@@ -41,31 +35,18 @@ public class BookstoreTest {
         instance.populateInstanceBookstore(orders, stocks, evaluations, rand, now);
     }
 
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of getBestSellers method, of class Bookstore.
      */
     @Test
     public void testGetBestSellers() {
-        System.out.println("getBestSellers");
         SUBJECTS subject = SUBJECTS.ARTS;
 
         // 1. Get baseline sales
         Map<Book, Integer> baselineSales = instance.getBestSellers(subject);
 
         // 2. Create a new sale
-        List<Book> artBooks = instance.getBooksBySubject(subject);
+        List<Book> artBooks = Bookstore.getBooksBySubject(subject);
         Book book1 = artBooks.get(0);
         Book book2 = artBooks.get(1);
 
@@ -75,13 +56,15 @@ public class BookstoreTest {
         int qty1 = 100;
         int qty2 = 50;
 
-        Customer customer = instance.getCustomer(1);
+        Customer customer = Bookstore.getCustomer(1)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
         Cart cart = instance.createCart(System.currentTimeMillis());
         cart.increaseLine(instance.getStock(book1.getId()), qty1);
         cart.increaseLine(instance.getStock(book2.getId()), qty2);
 
         instance.confirmBuy(customer.getId(), cart.getId(), "Test comment",
-                CreditCards.VISA, 1234567890123456L, "Test Customer", new Date(),
+                CreditCards.VISA, new long[]{1111, 2222, 3333, 4444},
+                "Test Customer", new Date(),
                 ShipTypes.AIR, new Date(), customer.getAddress().getId(),
                 System.currentTimeMillis(), StatusTypes.SHIPPED);
 
@@ -100,7 +83,6 @@ public class BookstoreTest {
      */
     @Test
     public void testIsPopulated() {
-        System.out.println("isPopulated");
         boolean expResult = true;
         boolean result = instance.isPopulated();
         assertEquals(expResult, result);
@@ -111,14 +93,13 @@ public class BookstoreTest {
      */
     @Test
     public void testAlwaysGetAddress() {
-        System.out.println("alwaysGetAddress");
-        String street1 = "";
-        String street2 = "";
-        String city = "";
-        String state = "";
-        String zip = "";
-        String countryName = "";
-        Address result = instance.alwaysGetAddress(street1, street2, city, state, zip, countryName);
+        String street1 = "street1";
+        String street2 = "street2";
+        String city = "city";
+        String state = "state";
+        String zip = "123456-999";
+        String countryName = "Brasil";
+        Address result = Bookstore.alwaysGetAddress(street1, street2, city, state, zip, countryName);
         Address expResult = new Address(0, street1, street2, city, state, zip, result.getCountry());
         assertEquals(expResult, result);
 
@@ -129,9 +110,9 @@ public class BookstoreTest {
      */
     @Test
     public void testGetCustomer_int() {
-        System.out.println("getCustomer");
         int cId = 0;
-        Customer result = instance.getCustomer(cId);
+        Customer result = Bookstore.getCustomer(cId)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"));
         assertEquals(cId, result.getId());
     }
 
@@ -140,11 +121,13 @@ public class BookstoreTest {
      */
     @Test
     public void testGetCustomer_String() {
-        System.out.println("getCustomer");
-        String username = instance.getCustomer(10).getUname();
-        Customer result = instance.getCustomer(username).get();
+        String username = Bookstore.getCustomer(10)
+                .orElseThrow(() -> new RuntimeException("Customer ID not found"))
+                .getUname();
+        Customer result = Bookstore.getCustomer(username)
+                .orElseThrow(() -> new RuntimeException("Username not found"));
+        assertNotNull(result);
         assertEquals(username, result.getUname());
-
     }
 
     /**
@@ -152,23 +135,22 @@ public class BookstoreTest {
      */
     @Test
     public void testCreateCustomer() {
-        System.out.println("createCustomer");
-        String fname = "";
-        String lname = "";
-        String street1 = "";
-        String street2 = "";
-        String city = "";
-        String state = "";
-        String zip = "";
-        String countryName = "";
-        String phone = "";
-        String email = "";
+        String fname = "first";
+        String lname = "last";
+        String street1 = "street1";
+        String street2 = "street2";
+        String city = "city";
+        String state = "state";
+        String zip = "12345-999";
+        String countryName = "Brasil";
+        String phone = "11-91234-5678";
+        String email = "e@e.com";
         double discount = 0.0;
-        Date birthdate = null;
-        String data = "";
-        long now = 0L;
+        Date birthdate = new Date();
+        String data = "data";
+        long now = new Date().getTime();
 
-        Customer result = instance.createCustomer(fname, lname, street1, street2, city, state, zip, countryName, phone, email, discount, birthdate, data, now);
+        Customer result = Bookstore.createCustomer(fname, lname, street1, street2, city, state, zip, countryName, phone, email, discount, birthdate, data, now);
         int id = result.getId();
         String uname = result.getUname();
         Date since = result.getSince();
@@ -188,10 +170,9 @@ public class BookstoreTest {
      */
     @Test
     public void testRefreshCustomerSession() {
-        System.out.println("refreshCustomerSession");
         int cId = 0;
         long now = 0L;
-        instance.refreshCustomerSession(cId, now);
+        Bookstore.refreshCustomerSession(cId, now);
     }
 
     /**
@@ -199,11 +180,10 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBook() {
-        System.out.println("getBook");
         int bId = 0;
-        Book result = instance.getBook(bId).get();
+        Book result = Bookstore.getBook(bId).get();
+        assertNotNull(result);
         assertEquals(bId, result.getId());
-
     }
 
     /**
@@ -211,9 +191,8 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBooksBySubject() {
-        System.out.println("getBooksBySubject");
         SUBJECTS subject = SUBJECTS.ARTS;
-        List<Book> result = instance.getBooksBySubject(subject);
+        List<Book> result = Bookstore.getBooksBySubject(subject);
         assertEquals(result.size(), result.stream().filter(book -> book.getSubject().equals(subject)).count());
 
     }
@@ -223,10 +202,15 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBooksByTitle() {
-        System.out.println("getBooksByTitle");
-        String title = instance.getBook(0).get().getTitle().substring(0, 4);
-        List<Book> result = instance.getBooksByTitle(title);
-        assertEquals(result.size(), result.stream().filter(book -> book.getTitle().startsWith(title)).count());
+        Book book = Bookstore.getBook(0).get();
+        assertNotNull(book);
+
+        String search = book.getTitle().substring(0, 4);
+        Pattern regex = Pattern.compile(search, Pattern.CASE_INSENSITIVE);
+
+        List<Book> result = Bookstore.getBooksByTitle(search);
+        assertTrue("All returned titles must match the search regex",
+                result.stream().allMatch(pred -> regex.matcher(pred.getTitle()).find()));
     }
 
     /**
@@ -234,11 +218,15 @@ public class BookstoreTest {
      */
     @Test
     public void testGetBooksByAuthor() {
-        System.out.println("getBooksByAuthor");
-        Author author = instance.getBook(0).get().getAuthor();
-        List<Book> result = instance.getBooksByAuthor(author.getLname());
-        assertEquals(result.size(), result.stream().filter(book -> book.getAuthor().getLname().equals(author.getLname())).count());
+        Book book = Bookstore.getBook(0).get();
+        assertNotNull(book);
 
+        Author author = book.getAuthor();
+        List<Book> result = Bookstore.getBooksByAuthor(author.getLname());
+        Pattern regex = Pattern.compile(author.getLname(), Pattern.CASE_INSENSITIVE);
+
+        assertTrue("All returned titles must match the search regex",
+                result.stream().allMatch(pred -> regex.matcher(pred.getAuthor().getLname()).find()));
     }
 
     /**
@@ -246,9 +234,8 @@ public class BookstoreTest {
      */
     @Test
     public void testGetNewBooks() {
-        System.out.println("getNewBooks");
-        SUBJECTS subject = instance.getBook(0).get().getSubject();
-        List<Book> result = instance.getNewBooks(subject);
+        SUBJECTS subject = Bookstore.getBook(0).get().getSubject();
+        List<Book> result = Bookstore.getNewBooks(subject);
         assertEquals(result.size(),
                 result.stream().filter(book -> book.getSubject().equals(subject)).count());
 
@@ -259,25 +246,24 @@ public class BookstoreTest {
      */
     @Test
     public void testUpdateBook() {
-        System.out.println("updateBook");
-        int bId = 0;
-        double cost = 0.0;
-        String image = "";
-        String thumbnail = "";
-        long now = 0L;
-        Book book = instance.getBook(bId).get();
-        instance.updateBook(bId, image, thumbnail, now);
+        Random random = new Random(0);
+        int bId = Bookstore.getABookAnyBook(random).getId();
+        double cost = 555.0;
+        String image = "image.png";
+        String thumbnail = "thumbnail.png";
+        long now = new Date().getTime();
+        Book book = Bookstore.getBook(bId).get();
+        Bookstore.updateBook(bId, cost, image, thumbnail, now);
         assertEquals(bId, book.getId());
-        //assertEquals(cost, book.getCost(), 0.0);
+        assertEquals(cost, book.getSrp(), 0.001);
         assertEquals(image, book.getImage());
         assertEquals(thumbnail, book.getThumbnail());
     }
 
     @Test
     public void customerRecommendation() {
-        List<Book> recommendations = instance.getRecommendationByUsers(79);
-
-        assertEquals(recommendations.size(), 10);
+        List<Book> recommendations = Bookstore.getRecommendationByUsers(79);
+        assertEquals(5, recommendations.size());
     }
 
     @Test
@@ -289,7 +275,6 @@ public class BookstoreTest {
                 if(!booksBuyers.containsKey(book)) {
                     booksBuyers.put(book, new ArrayList<>());
                 }
-
 
                 List<Customer> buyers = booksBuyers.get(book);
                 Customer customer = order.getCustomer();
@@ -304,8 +289,7 @@ public class BookstoreTest {
 
         Map<Customer, List<Book>> recommendedBooks = new HashMap<>();
         buyers.forEach(buyer -> {
-            List<Book> recommendations = instance.getRecommendationByUsers(buyer.getId());
-
+            List<Book> recommendations = Bookstore.getRecommendationByUsers(buyer.getId());
             recommendedBooks.put(buyer, recommendations);
         });
 

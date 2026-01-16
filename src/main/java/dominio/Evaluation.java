@@ -1,5 +1,7 @@
 package dominio;
 
+import util.Validator;
+
 /**
  * <img src="./doc-files/Evaluation.png" alt="Bookmarket">
  * <br><a href="./doc-files/Evaluation.html"> code </a>
@@ -19,11 +21,11 @@ public class Evaluation {
      * @param book Book class reference
      * @param rating Book rating
      */
-    public Evaluation(final int id, Customer customer, Book book, double rating) {
-        this.id = id;
-        this.customer = customer;
-        this.book = book;
-        this.rating = rating;
+    public Evaluation(final int id, Customer c, Book b, double rating) {
+        this.id = Validator.notNegative(id, "id");
+        this.customer = Validator.notNull(c, "Customer");
+        this.book = Validator.notNull(b, "Book");
+        this.rating = Validator.notOverrangeInclusive(rating, 0, 5, "rating");
     }
 
     /**
