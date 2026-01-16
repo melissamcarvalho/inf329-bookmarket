@@ -61,7 +61,7 @@ public class BookstoreGetBestSellersTest {
         }
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testGetBestSellers_ignoresOrderLinesWithNullBook() {
         SUBJECTS subject = SUBJECTS.ARTS;
 
