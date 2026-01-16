@@ -3,15 +3,12 @@ package servico;
 import java.util.*;
 
 import dominio.*;
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import recommendation.RecommendationSettings;
 import util.TPCW_Util;
@@ -31,17 +28,6 @@ public class BookmarketTest {
 
     private Book topSellerBook;
     private Book secondSellerBook;
-
-    public BookmarketTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
 
     @Before
     /**
@@ -77,7 +63,6 @@ public class BookmarketTest {
              */
             for (int j = 0; j < items; j++) {
                 bookstore.updateStock(j, 1);
-                //bookstore.updateStock(j, 1);
             }
 
             bookstores[i] = bookstore;
@@ -100,10 +85,6 @@ public class BookmarketTest {
         cart.increaseLine(bookstores[0].getStock(secondSellerBook.getId()), 50);
 
         Bookmarket.doBuyConfirm(bookstores[0].getId(), cartId, customer.getId(), CreditCards.AMEX, 123456789012345L, "Test User", new Date(), ShipTypes.AIR, StatusTypes.SHIPPED);
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
@@ -173,24 +154,225 @@ public class BookmarketTest {
         assertEquals( eval.get().getCustomer(), eval2.getCustomer() );
         assertEquals( eval.get().getBook(), eval2.getBook() );
         assertEquals( rating, eval2.getRating(), 0.01 );
-
     }
 
-    /**
-     * Test of getPriceBookRecommendationByUsers method, of class Bookmarket.
-     */
     @Test
-    public void testGetPriceBookRecommendationByUsers() {
-        System.out.println("getPriceBookRecommendationByUsers");
+    public void testCustomerOperations() {
+        Calendar.getInstance().set(2000, Calendar.NOVEMBER, 16, 0, 0, 0);
+        Date birthdate = Calendar.getInstance().getTime();
 
+        Customer customer = Bookmarket.createNewCustomer(
+                "First", "Last", "Street1", "Street2", "City",
+                "State", "123456-999", "Country", "11-1234-5678", "e@e.com",
+                birthdate, "Data");
+
+        assertNotNull("Customer should be not null", customer);
+
+        String[] name = Bookmarket.getName(customer.getId());
+        assertNotNull("Customer name should be not null", name);
+        assertEquals("Customer name string array should have length of 3", 3, name.length);
+        assertFalse("Customer first name should not be empty", name[0].isEmpty());
+        assertEquals("Customer first name should match", "First", name[0]);
+        assertFalse("Customer middle name should not be empty", name[1].isEmpty());
+        assertEquals("Customer middle name should match", "Last", name[1]);
+        assertFalse("Customer last name should not be empty", name[2].isEmpty());
+        assertEquals("Customer last name should match", "OGBABABA", name[2]);
+
+        String username = Bookmarket.getUserName(customer.getId());
+        assertNotNull("Username should not be null", username);
+        assertFalse("Username should not be empty", username.isEmpty());
+
+        String password = Bookmarket.getPassword(username);
+        assertNotNull("Password should not be null", password);
+        assertFalse("Password should not be empty", password.isEmpty());
+
+        Customer other = Bookmarket.getCustomer(username);
+        assertNotNull("Other customer should not be null", other);
+        assertEquals("Customers should be equal", customer, other);
+
+        Order nullorder = Bookmarket.getMostRecentOrder(username);
+        assertNull("Most recent order should be null", nullorder);
     }
 
-    /**
-     * Test of getPriceBookRecommendationByUsers method, of class Bookmarket.
-     */
     @Test
-    public void testGetStocksRecommendationByUsers() {
-        System.out.println("getStocksRecommendationByUsers");
+    public void testOrderSequence() {
+        Calendar.getInstance().set(2000, Calendar.NOVEMBER, 16, 0, 0, 0);
+        Date birthdate = Calendar.getInstance().getTime();
+
+        Customer customer = Bookmarket.createNewCustomer(
+                "First", "Last", "Street1", "Street2", "City",
+                "State", "123456-999", "Country", "11-1234-5678", "e@e.com",
+                birthdate, "Data");
+
+        assertNotNull("Customer should be not null", customer);
+
+        Date now = new Date();
+        int cartId = Bookmarket.createEmptyCart(0);
+        assertTrue("Cart ID should be greater than 0", cartId > 0);
+
+        Cart cart = Bookmarket.getCart(0, cartId);
+        assertNotNull("Cart should not be null", cart);
+        assertEquals("Carts should be equal", cart.getId(), cartId);
+
+        List<CartLine> cartLines = new ArrayList<>(cart.getLines());
+        assertTrue("Cart should be empty at creation", cartLines.isEmpty());
+
+        Book randomBook = Bookmarket.getABookAnyBook();
+        Bookmarket.doCart(0, cartId, randomBook.getId(), null, null);
+
+        cartLines = new ArrayList<>(cart.getLines());
+        assertFalse("Cart should be empty at creation", cartLines.isEmpty());
+        assertTrue("Cart should have the random book in it",
+                cartLines.stream().anyMatch(pred -> pred.getBook().equals(randomBook)));
+
+        Order order = Bookmarket.doBuyConfirm(0, cartId, customer.getId(), CreditCards.VISA, 4444L,
+                "FIRST LAST", now, ShipTypes.AIR);
+
+        String username = Bookmarket.getUserName(customer.getId());
+        Order recentOrder = Bookmarket.getMostRecentOrder(username);
+        assertNotNull("Most recent order should not be null", recentOrder);
+        assertEquals("", order, recentOrder);
     }
 
+    @Test
+    public void testGetBook() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        Bookmarket.adminUpdate(randomBook.getId(), 1234.0, "image.png", "thumbnail.png");
+
+        Book anotherBook = Bookmarket.getBook(randomBook.getId());
+        assertNotNull("Book should not be null", anotherBook);
+        assertEquals("Books should be equal", anotherBook, randomBook);
+        assertEquals("Book cost should have been updated", 1234.0, anotherBook.getSrp(), 0.001);
+        assertEquals("Book image should have been updated", "image.png", anotherBook.getImage());
+        assertEquals("Book thumbnail should have been updated", "thumbnail.png", anotherBook.getThumbnail());
+        assertThrows("getBook should throw with invalid id",
+                Exception.class, () -> Bookmarket.getBook(-1));
+    }
+
+    @Test
+    public void testSubjectSearch() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> subjectSearch = Bookmarket.doSubjectSearch(randomBook.getSubject());
+        assertFalse("Subject search should not be empty", subjectSearch.isEmpty());
+        assertTrue("Subject search should return a book with equal Subject",
+                subjectSearch.stream().anyMatch( book -> book.getSubject().equals(randomBook.getSubject())));
+    }
+
+    @Test
+    public void testTitleSearch() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> titleSearch = Bookmarket.doTitleSearch(randomBook.getTitle().substring(0, 8));
+        assertFalse("Title search should not be empty", titleSearch.isEmpty());
+        assertTrue("Title search should return a book with equal Title",
+                titleSearch.stream().anyMatch(book -> book.getTitle().equals(randomBook.getTitle())));
+    }
+
+    @Test
+    public void testAuthorSearch() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> authorSearch = Bookmarket.doAuthorSearch(randomBook.getAuthor().getMname());
+        assertFalse("Author search should not be empty", authorSearch.isEmpty());
+        assertTrue("Author search should return a book with equal Author",
+                authorSearch.stream().anyMatch(book -> book.getAuthor().equals(randomBook.getAuthor())));
+    }
+
+    @Test
+    public void testGetRelated() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> related = Bookmarket.getRelated(randomBook.getId());
+        assertFalse("Related list should not be empty", related.isEmpty());
+        assertEquals("Related list should have length of 5", 5, related.size());
+        assertEquals(related.get(0), randomBook.getRelated1());
+        assertEquals(related.get(1), randomBook.getRelated2());
+        assertEquals(related.get(2), randomBook.getRelated3());
+        assertEquals(related.get(3), randomBook.getRelated4());
+        assertEquals(related.get(4), randomBook.getRelated5());
+
+        List<Book> invalid = Bookmarket.getRelated(-1);
+        assertTrue("Invalid ID should return empty", invalid.isEmpty());
+    }
+
+    @Test
+    public void testGetNewProducts() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Book> newProducts = Bookmarket.getNewProducts(randomBook.getSubject());
+        assertFalse("New products list should not be empty", newProducts.isEmpty());
+    }
+
+    @Test
+    public void testGetBookCosts() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Double> bookCostInStock = Bookmarket.getCosts(randomBook);
+        assertFalse("Book costs list should not be empty", bookCostInStock.isEmpty());
+        assertTrue("Minimum book cost in stock should be equal or lower",
+                Collections.min(bookCostInStock) <= randomBook.getSrp());
+        assertTrue("Maximum book cost in stock should be equal or higher",
+                Collections.max(bookCostInStock) >= randomBook.getSrp());
+    }
+
+    @Test
+    public void testGetSellers() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        Map<Book, Set<Stock>> bestsellers = Bookmarket.getBestSellers(randomBook.getSubject());
+        assertFalse("Bestsellers list should not be empty", bestsellers.isEmpty());
+    }
+
+    @Test
+    public void testGetStock() {
+        Book randomBook = Bookmarket.getABookAnyBook();
+        assertNotNull("Book should not be null", randomBook);
+
+        List<Stock> stocks = Bookmarket.getStocks(randomBook.getId());
+        assertNotNull("Stock list should not be null", stocks);
+        assertFalse("Stock list should not be empty", stocks.isEmpty());
+
+        int storeId = stocks.get(0).getIdBookstore();
+        Stock storeStock = Bookmarket.getStock(storeId, randomBook.getId());
+        assertNotNull("Stock should not be null", storeStock);
+        assertEquals("Books should be equal", stocks.get(0), storeStock);
+    }
+
+    @Test
+    public void testRecommendationByItens() {
+        List<Book> recommendations = Bookmarket.getRecommendationByItens(79);
+        assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
+        assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
+                10, recommendations.size());
+    }
+
+    @Test
+    public void testRecommendationByUsers() {
+        List<Book> recommendations = Bookmarket.getRecommendationByUsers(79);
+        assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
+        assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
+                10, recommendations.size());
+    }
+
+    @Test
+    public void testStocksRecommendationByUsers() {
+        // TODO
+        System.out.println("TODO: testStocksRecommendationByUsers");
+    }
+
+    @Test
+    public void testPriceBookRecommendationByUsers() {
+        // TODO
+        System.out.println("TODO: testPriceBookRecommendationByUsers");
+    }
 }

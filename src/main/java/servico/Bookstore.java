@@ -51,27 +51,11 @@ package servico;
  * you give them.
  *
  ************************************************************************/
-import dominio.ShipTypes;
-import dominio.Address;
-import dominio.Author;
-import dominio.BACKINGS;
-import dominio.Book;
-import dominio.CCTransaction;
-import dominio.Cart;
-import dominio.Country;
-import dominio.CreditCards;
-import dominio.Customer;
-import dominio.Order;
-import dominio.OrderLine;
-import dominio.SUBJECTS;
-import dominio.StatusTypes;
-import dominio.Stock;
+
 import dominio.*;
-import recommendation.RecommendationEngine;
-import recommendation.RecommendationSettings;
+import recommendation.*;
 import util.TPCW_Util;
 
-import javax.swing.text.html.Option;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,7 +148,7 @@ public class Bookstore implements Serializable {
     }
 
     public void setSettings(final RecommendationSettings settings) {
-        this.recommendationEngine.setSettings(settings);
+        recommendationEngine.setSettings(settings);
     }
 
     /**
@@ -351,13 +335,11 @@ public class Bookstore implements Serializable {
     public static List<Book> getRecommendationByUsers(int customerId) {
         List<Integer> recommended = recommendationEngine.recommendByUsers(customerId, 10);
 
-        List<Book> recommendedBooks = recommended.stream()
+        return recommended.stream()
             .map(Bookstore::getBook)
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toList());
-
-       return recommendedBooks;
     }
 
     /**
@@ -380,7 +362,7 @@ public class Bookstore implements Serializable {
                 }
             }
         }
-        Collections.sort(books, (Book a, Book b) -> a.getTitle().compareTo(b.getTitle()));
+        books.sort((Book a, Book b) -> a.getTitle().compareTo(b.getTitle()));
         return books;
     }
 
@@ -388,17 +370,17 @@ public class Bookstore implements Serializable {
      * Returns a list of books by title.
      */
     public static List<Book> getBooksByTitle(String title) {
-        Pattern regex = Pattern.compile("^" + title);
+        Pattern regex = Pattern.compile(title, Pattern.CASE_INSENSITIVE);
         ArrayList<Book> books = new ArrayList<>();
         for (Book book : booksById) {
-            if (regex.matcher(book.getTitle()).matches()) {
+            if (regex.matcher(book.getTitle()).find()) {
                 books.add(book);
                 if (books.size() > 50) {
                     break;
                 }
             }
         }
-        Collections.sort(books, (Book a, Book b) -> a.getTitle().compareTo(b.getTitle()));
+        books.sort((Book a, Book b) -> a.getTitle().compareTo(b.getTitle()));
         return books;
     }
 
@@ -406,17 +388,20 @@ public class Bookstore implements Serializable {
      Returns a list of books by author.
      */
     public static List<Book> getBooksByAuthor(String author) {
-        Pattern regex = Pattern.compile("^" + author);
+        Pattern regex = Pattern.compile(author, Pattern.CASE_INSENSITIVE);
         ArrayList<Book> books = new ArrayList<>();
         for (Book book : booksById) {
-            if (regex.matcher(book.getAuthor().getLname()).matches()) {
+            boolean match = regex.matcher(book.getAuthor().getFname()).find() ||
+                            regex.matcher(book.getAuthor().getMname()).find() ||
+                            regex.matcher(book.getAuthor().getLname()).find();
+            if (match) {
                 books.add(book);
                 if (books.size() > 50) {
                     break;
                 }
             }
         }
-        Collections.sort(books, (Book a, Book b) -> a.getTitle().compareTo(b.getTitle()));
+        books.sort((Book a, Book b) -> a.getTitle().compareTo(b.getTitle()));
         return books;
     }
 
@@ -434,7 +419,7 @@ public class Bookstore implements Serializable {
                 books.add(book);
             }
         }
-        Collections.sort(books, new Comparator<Book>() {
+        books.sort(new Comparator<Book>() {
             public int compare(Book a, Book b) {
                 int result = b.getPubDate().compareTo(a.getPubDate());
                 if (result == 0) {
@@ -443,28 +428,22 @@ public class Bookstore implements Serializable {
                 return result;
             }
         });
-        return books.subList(0, books.size() >= 50 ? 50 : books.size());
-    }
-
-    List<Book> getNewBooks1(SUBJECTS subject) {
-        return null;
+        return books.subList(0, Math.min(books.size(), 50));
     }
 
     List<Book> getNewBooks2(SUBJECTS subject) {
         List<Book> books = new ArrayList<>();
         booksById.stream()
                 .filter((book) -> (subject.equals(book.getSubject())))
-                .forEachOrdered((book) -> {
-                    books.add(book);
-                });
-        Collections.sort(books, (Book a, Book b) -> {
+                .forEachOrdered(books::add);
+        books.sort((Book a, Book b) -> {
             int result = b.getPubDate().compareTo(a.getPubDate());
             if (result == 0) {
                 result = a.getTitle().compareTo(b.getTitle());
             }
             return result;
         });
-        return books.subList(0, books.size() >= 50 ? 50 : books.size());
+        return books.subList(0, Math.min(books.size(), 50));
     }
 
     List<Book> getNewBooks3(SUBJECTS subject) {
@@ -494,19 +473,8 @@ public class Bookstore implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    /**
-     *
-     */
     protected static class Counter {
-
-        /**
-         *
-         */
         public Book book;
-
-        /**
-         *
-         */
         public int count;
     }
 
@@ -520,7 +488,7 @@ public class Bookstore implements Serializable {
 
         // Iterate through all orders to find sales of books of the given subject
         ordersByCreation.stream()
-            .filter(order -> order.isShipped())
+            .filter(Order::isShipped)
             .forEach(order -> { 
                 order.getLines().stream()
                     .filter(line -> line.getBook().getSubject().equals(subject))
@@ -565,13 +533,16 @@ public class Bookstore implements Serializable {
      * @param thumbnail
      * @param now
      */
-    public static void updateBook(int bId, String image,
-            String thumbnail, long now) {
-        Book book = getBook(bId).get();
+    public static void updateBook(int bId, String image, String thumbnail, long now) {
+        Optional<Book> opt = getBook(bId);
+        if (!opt.isPresent()) {
+            throw new IllegalStateException("Book ID is incorrect.");
+        }
+
+        Book book = opt.get();
         book.setImage(image);
         book.setThumbnail(thumbnail);
         book.setPubDate(new Date(now));
-        
     }
 
     /**
@@ -580,7 +551,12 @@ public class Bookstore implements Serializable {
      * @param cost
      */
     public void updateStock(int bId, double cost) {
-        Book book = getBook(bId).get();
+        Optional<Book> opt = getBook(bId);
+        if (!opt.isPresent()) {
+            throw new IllegalStateException("Book ID is incorrect.");
+        }
+
+        Book book = opt.get();
         if (!stockByBook.containsKey(book)) {
             int stock = TPCW_Util.getRandomInt(rand, 10, 30);
             stockByBook.put(book, new Stock(this.id, getAnAddressAnyAddress(rand), book, cost, stock));
@@ -594,9 +570,13 @@ public class Bookstore implements Serializable {
      * @return
      */
     public Stock getStock(int bId) {
-        final Book book = getBook(bId).get();
-        final Stock stock = stockByBook.get(book);
-        return stock;
+        Optional<Book> opt = getBook(bId);
+        if (!opt.isPresent()) {
+            throw new IllegalStateException("Book ID is incorrect.");
+        }
+
+        Book book = opt.get();
+        return stockByBook.get(book);
     }
 
     /**
@@ -911,8 +891,8 @@ public class Bookstore implements Serializable {
                 System.out.print(".");
             }
             Address address = getAnAddressAnyAddress(rand);
-            long since = now - TPCW_Util.getRandomInt(rand, 1, 730) * 86400000 /* a day */;
-            long lastLogin = since + TPCW_Util.getRandomInt(rand, 0, 60) * 86400000 /* a day */;
+            long since = now - TPCW_Util.getRandomInt(rand, 1, 730) * 86400000L /* a day */;
+            long lastLogin = since + TPCW_Util.getRandomInt(rand, 0, 60) * 86400000L /* a day */;
             createCustomer(
                     TPCW_Util.getRandomString(rand, 8, 15),
                     TPCW_Util.getRandomString(rand, 8, 15),
@@ -976,7 +956,7 @@ public class Bookstore implements Serializable {
                     "img" + i % 100 + "/image_" + i + ".gif",
                     srp,
                     new Date(pubdate.getTime()
-                            + TPCW_Util.getRandomInt(rand, 1, 30) * 86400000 /* a day */),
+                            + TPCW_Util.getRandomInt(rand, 1, 30) * 86400000L /* a day */),
                     TPCW_Util.getRandomString(rand, 13, 13),
                     TPCW_Util.getRandomInt(rand, 20, 9999),
                     BACKINGS.values()[rand.nextInt(BACKINGS.values().length)],
@@ -1068,13 +1048,13 @@ public class Bookstore implements Serializable {
                     CreditCards.values()[rand.nextInt(CreditCards.values().length)],
                     TPCW_Util.getRandomLong(rand, 1000000000000000L, 9999999999999999L),
                     TPCW_Util.getRandomString(rand, 14, 30),
-                    new Date(now + TPCW_Util.getRandomInt(rand, 10, 730) * 86400000 /* a day */),
+                    new Date(now + TPCW_Util.getRandomInt(rand, 10, 730) * 86400000L /* a day */),
                     TPCW_Util.getRandomString(rand, 15, 15),
                     cart.total(customer),
                     new Date(now),
                     getACountryAnyCountry(rand));
-            long orderDate = now - TPCW_Util.getRandomInt(rand, 53, 60) * 86400000 /* a day */;
-            long shipDate = orderDate + TPCW_Util.getRandomInt(rand, 0, 7) * 86400000 /* a day */;
+            long orderDate = now - TPCW_Util.getRandomInt(rand, 53, 60) * 86400000L /* a day */;
+            long shipDate = orderDate + TPCW_Util.getRandomInt(rand, 0, 7) * 86400000L /* a day */;
             createOrder(
                     customer,
                     new Date(orderDate),
