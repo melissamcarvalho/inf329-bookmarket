@@ -394,8 +394,23 @@ public class Bookmarket {
      */
     public static Map<Book, Set<Stock>> getStocksRecommendationByUsers(int c_id) {
         Validator.notNegative(c_id, "Customer ID");
-        // TODO
-        throw new NotImplementedException("Method not implemented yet");
+
+        Map<Book, Set<Stock>> result = new HashMap<>();
+
+        List<Book> recommendation = getRecommendationByUsers(c_id).stream()
+                .limit(5)
+                .sorted(Comparator.comparingInt(Book::getId))
+                .collect(Collectors.toList());
+
+        for (Book book : recommendation) {
+            Set<Stock> setStock = new HashSet<>();
+            Bookmarket.getStocks(book.getId()).stream()
+                    .sorted(Comparator.comparingInt(Stock::getIdBookstore))
+                    .map(setStock::add);
+            result.put(book, setStock);
+        }
+
+        return result;
     }
 
     /**
