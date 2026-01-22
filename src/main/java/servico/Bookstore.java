@@ -334,13 +334,22 @@ public class Bookstore implements Serializable {
     /**
      * Returns a list of recommended books based on items.
      */
+    /**
+     * Returns a list of recommended books based on items.
+     * 
+     * @param c_id Customer ID
+     * @return List of recommended books (empty list if no recommendations available)
+     */
     public static List<Book> getRecommendationByItens(int c_id) {
-        // to do
-        return null;
+        // TODO: Implement item-based recommendation
+        return Collections.emptyList();
     }
 
     /**
      * Returns a list of recommended books based on users.
+     * 
+     * @param customerId Customer ID
+     * @return List of recommended books (empty list if no recommendations available)
      */
     public static List<Book> getRecommendationByUsers(int customerId) {
         List<Integer> recommended = recommendationEngine.recommendByUsers(customerId, 10);
