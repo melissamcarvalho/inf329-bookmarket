@@ -366,9 +366,10 @@ public class Bookmarket {
     }
 
     /**
-     *
-     * @param c_id
-     * @return
+     * Returns a list of recommended books based on items.
+     * 
+     * @param c_id Customer ID
+     * @return List of recommended books (never null, returns empty list if no recommendations available)
      */
     public static List<Book> getRecommendationByItens(int c_id) {
         Validator.notNegative(c_id, "Customer ID");
@@ -376,13 +377,15 @@ public class Bookmarket {
     }
 
     /**
-     *
-     * @param c_id
-     * @return
+     * Returns a list of recommended books based on users.
+     * 
+     * @param c_id Customer ID
+     * @return List of recommended books (never null, returns empty list if no recommendations available)
      */
     public static List<Book> getRecommendationByUsers(int c_id) {
         Validator.notNegative(c_id, "Customer ID");
-        return Bookstore.getRecommendationByUsers(c_id);
+        List<Book> recommendations = Bookstore.getRecommendationByUsers(c_id);
+        return recommendations != null ? recommendations : new ArrayList<>();
     }
 
     /**
