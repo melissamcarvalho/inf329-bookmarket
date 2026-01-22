@@ -1,46 +1,72 @@
 package servico;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import dominio.*;
 import org.apache.commons.lang.NotImplementedException;
-import util.TPCW_Util;
 
+import dominio.Address;
+import dominio.Book;
+import dominio.Cart;
+import dominio.CreditCards;
+import dominio.Customer;
+import dominio.Evaluation;
+import dominio.Order;
+import dominio.SUBJECTS;
+import dominio.ShipTypes;
+import dominio.StatusTypes;
+import dominio.Stock;
 import recommendation.RecommendationSettings;
+import util.TPCW_Util;
 import util.Validator;
 
 /**
- * The {@code Bookmarket} class serves as the main service layer and entry point for the Bookmarket system.
+ * The {@code Bookmarket} class serves as the main service layer and entry point
+ * for the Bookmarket system.
  * <p>
  * <b>Architecture Overview:</b><br>
- * Bookmarket acts as a facade, exposing high-level operations for managing books, customers, orders, carts,
- * and recommendations. It coordinates the underlying business logic and data, which are distributed across
- * multiple {@link Bookstore} instances (representing different stores or partitions of the market).
+ * Bookmarket acts as a facade, exposing high-level operations for managing
+ * books, customers, orders, carts, and recommendations. It coordinates the
+ * underlying business logic and data, which are distributed across multiple
+ * {@link Bookstore} instances (representing different stores or partitions of
+ * the market).
  * <ul>
- *   <li>Manages the global state of the system via a {@code StateMachine} that holds all {@code Bookstore} objects.</li>
- *   <li>Provides static methods for searching, retrieving, and manipulating books, customers, and orders.</li>
- *   <li>Delegates most domain-specific logic to the {@code Bookstore} class, acting as a central access point.</li>
- *   <li>Supports recommendations, bestseller queries, and price aggregation across all bookstores.</li>
- *   <li>Handles system initialization and data population for testing or demonstration purposes.</li>
+ * <li>Manages the global state of the system via a {@code StateMachine} that
+ * holds all {@code Bookstore} objects.</li>
+ * <li>Provides static methods for searching, retrieving, and manipulating
+ * books, customers, and orders.</li>
+ * <li>Delegates most domain-specific logic to the {@code Bookstore} class,
+ * acting as a central access point.</li>
+ * <li>Supports recommendations, bestseller queries, and price aggregation
+ * across all bookstores.</li>
+ * <li>Handles system initialization and data population for testing or
+ * demonstration purposes.</li>
  * </ul>
  * <b>Key Responsibilities:</b>
  * <ul>
- *   <li>System initialization and seeding with {@link #init(int, Bookstore...)} and {@link #populate(int, int, int, int, int)}.</li>
- *   <li>Customer management: creation, session refresh, and retrieval.</li>
- *   <li>Book management: search by subject, title, author, and retrieval of new products.</li>
- *   <li>Order and cart management, including recommendations and bestseller listings.</li>
- *   <li>Acts as a bridge between the client layer and the domain logic in {@code Bookstore}.</li>
+ * <li>System initialization and seeding with {@link #init(int, Bookstore...)}
+ * and {@link #populate(int, int, int, int, int)}.</li>
+ * <li>Customer management: creation, session refresh, and retrieval.</li>
+ * <li>Book management: search by subject, title, author, and retrieval of new
+ * products.</li>
+ * <li>Order and cart management, including recommendations and bestseller
+ * listings.</li>
+ * <li>Acts as a bridge between the client layer and the domain logic in
+ * {@code Bookstore}.</li>
  * </ul>
  * <p>
  * <img src="./doc-files/Bookstore.png" alt="Bookmarket">
@@ -107,9 +133,9 @@ public class Bookmarket {
         } catch (UmbrellaException e) {
             throw new RuntimeException(e);
         }
-        
+
         stateMachine.getStateStream().forEach(
-            store -> store.setSettings(settings)
+                store -> store.setSettings(settings)
         );
     }
 
@@ -318,11 +344,12 @@ public class Bookmarket {
     }
 
     /**
-     * Retorna uma map na qual: (1) as "chaves da map" (keys) são os 'limit' livros
-     * mais vendidos de um determinado assunto (subject) de todas as Bookstores
-     * e (2) "os valores da map" (values) são conjuntos (set) de estoques
-     * (Stock) do livro da key, ordenados de forma crescente por valor de cost
-     * 
+     * Retorna uma map na qual: (1) as "chaves da map" (keys) são os 'limit'
+     * livros mais vendidos de um determinado assunto (subject) de todas as
+     * Bookstores e (2) "os valores da map" (values) são conjuntos (set) de
+     * estoques (Stock) do livro da key, ordenados de forma crescente por valor
+     * de cost
+     *
      * @param subject
      * @param limit
      * @return
@@ -352,7 +379,7 @@ public class Bookmarket {
 
         // For each top book, get all its stocks sorted by cost
         Map<Book, Set<Stock>> result = new LinkedHashMap<>();
-        bestSellers.forEach( book -> {
+        bestSellers.forEach(book -> {
             Set<Stock> stocks = new TreeSet<>(Comparator.comparing(Stock::getCost));
             getBookstoreStream().forEach(bookstore -> {
                 Stock stock = bookstore.getStock(book.getId());
@@ -408,8 +435,24 @@ public class Bookmarket {
      */
     public static Map<Book, Double> getPriceBookRecommendationByUsers(int c_id) {
         Validator.notNegative(c_id, "Customer ID");
-        // TODO
-        throw new NotImplementedException("Method not implemented yet");
+        // Subscriber perspective: for each recommended book, return the lowest price across all stores
+        List<Book> recommended = getRecommendationByUsers(c_id);
+        Map<Book, Double> result = new LinkedHashMap<>();
+        for (Book book : recommended) {
+            // For each store, get the book's stock and extract the price
+            List<Double> prices = getBookstoreStream()
+                    .map(store -> store.getStock(book.getId()))
+                    .filter(Objects::nonNull)
+                    .map(Stock::getCost)
+                    .collect(Collectors.toList());
+            if (!prices.isEmpty()) {
+                double min = prices.stream().min(Double::compareTo).orElse(0.0);
+                result.put(book, min);
+            } else {
+                result.put(book, 0.0); // or null, if preferred
+            }
+        }
+        return result;
     }
 
     /**
@@ -440,8 +483,8 @@ public class Bookmarket {
                 // transforma o stream de bookstore em stream de stock
                 .map(store -> store.getStock(idBook))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No Stock for this combination of Bookstore and Book. " +
-                        "Bookstore ID: " + idBookstore + ". Book ID: " + idBook));
+                .orElseThrow(() -> new IllegalArgumentException("No Stock for this combination of Bookstore and Book. "
+                + "Bookstore ID: " + idBookstore + ". Book ID: " + idBook));
     }
 
     /**
