@@ -83,7 +83,7 @@ public class RecommendationEngine {
      * Recommend by Items
      * @param customer_id Customer ID
      * @param count Number of recommendations to return
-     * @return List of Book IDs
+     * @return List of Book IDs (empty list if no recommendations available)
      */
     public List<Integer> recommendByItems(int customer_id, int count) {
         List<Integer> recommendations = this.itemBasedMahoutRecommender.recommend(customer_id, count);
@@ -93,10 +93,10 @@ public class RecommendationEngine {
     /**
      * Recommend by Users
      * @param customer_id Customer ID
-     * @return List of Book IDs
+     * @param count Number of recommendations to return
+     * @return List of Book IDs (empty list if no recommendations available)
      */
     public List<Integer> recommendByUsers(int customer_id, int count) {
-        List<Integer> recommendations = this.userBasedMahoutRecommender.recommend(customer_id, count);
-        return recommendations;
+        return this.userBasedMahoutRecommender.recommend(customer_id, count);
     }
 }

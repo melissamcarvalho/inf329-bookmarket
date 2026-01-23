@@ -5,6 +5,7 @@ import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
+import org.apache.mahout.cf.taste.impl.neighborhood.ThresholdUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
@@ -112,6 +113,18 @@ public class UserBasedMahoutRecommender extends BaseMahoutRecommender {
                         throw new MahoutRecommenderException("Failed to create NearestNUserNeighborhood. " +
                                 "Verify that the DataModel has enough users for the specified neighborhood size (" +
                                 this.mahoutNeighborhoodSize + ").", e);
+                    }
+                    break;
+                case thresholdUserNeighborhood:
+                    try {
+                        this.mahoutNeighborhood = new ThresholdUserNeighborhood(
+                                this.getSettings().getThreshold(),
+                                this.mahoutSimilarity,
+                                this.getModel());
+                    } catch (Exception e) {
+                        throw new MahoutRecommenderException("Failed to create ThresholdUserNeighborhood. " +
+                                "Verify that the DataModel has valid user preferences and the threshold (" +
+                                this.getSettings().getThreshold() + ") is appropriate.", e);
                     }
                     break;
                 default:
