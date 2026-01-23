@@ -1,11 +1,39 @@
 package servico;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import dominio.*;
-import org.junit.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import dominio.Book;
+import dominio.Cart;
+import dominio.CartLine;
+import dominio.CreditCards;
+import dominio.Customer;
+import dominio.Evaluation;
+import dominio.Order;
+import dominio.SUBJECTS;
+import dominio.ShipTypes;
+import dominio.Stock;
+import dominio.StatusTypes;
+import dominio.Stock;
 import recommendation.RecommendationSettings;
+import servico.Bookmarket.StateMachine;
 import util.TPCW_Util;
 
 import static org.junit.Assert.*;
@@ -31,7 +59,7 @@ public class BookmarketTest {
      */
     @BeforeClass
     public static void setUp() {
-        long now = System.currentTimeMillis();
+        // long now = System.currentTimeMillis(); // Removed unused variable
 
         int items = 500;
         int customers = 1000;
@@ -42,7 +70,6 @@ public class BookmarketTest {
         int evaluations = 1000;
 
 //        Bookstore.populate(seed, now, items, customers, addresses, authors);
-
         bookstores = new Bookstore[5];
 
         for (int i = 0; i < 5; i++) {
@@ -140,9 +167,9 @@ public class BookmarketTest {
         Evaluation eval = Bookmarket.createEvaluation(storeId, customer.getId(), book.getId(), rating);
 
         assertNotNull(eval);
-        assertEquals( customer, eval.getCustomer() );
-        assertEquals( book, eval.getBook() );
-        assertEquals( rating, eval.getRating(), 0.01 );
+        assertEquals(customer, eval.getCustomer());
+        assertEquals(book, eval.getBook());
+        assertEquals(rating, eval.getRating(), 0.01);
     }
 
     @Test
@@ -250,7 +277,7 @@ public class BookmarketTest {
         List<Book> subjectSearch = Bookmarket.doSubjectSearch(randomBook.getSubject());
         assertFalse("Subject search should not be empty", subjectSearch.isEmpty());
         assertTrue("Subject search should return a book with equal Subject",
-                subjectSearch.stream().anyMatch( book -> book.getSubject().equals(randomBook.getSubject())));
+                subjectSearch.stream().anyMatch(book -> book.getSubject().equals(randomBook.getSubject())));
     }
 
     @Test
@@ -423,5 +450,40 @@ public class BookmarketTest {
         assertNotNull("Recommendation list should never be null", recommendations);
         assertTrue("Recommendation list should be empty for non-existent customer",
                recommendations.isEmpty());
+    }
+
+    @Test
+    public void testStateMachineCreation() {
+        Bookstore bookstore1 = new Bookstore(1);
+        Bookstore bookstore2 = new Bookstore(2);
+
+        StateMachine stateMachine = StateMachine.create(bookstore1, bookstore2);
+
+        assertNotNull("StateMachine should not be null", stateMachine);
+        assertEquals("StateMachine should contain 2 bookstores", 2, stateMachine.getState().size());
+        assertTrue("StateMachine should contain bookstore1", stateMachine.getState().contains(bookstore1));
+        assertTrue("StateMachine should contain bookstore2", stateMachine.getState().contains(bookstore2));
+    }
+
+    @Test
+    public void testStateMachineCheckpoint() {
+        Bookstore bookstore1 = new Bookstore(1);
+        StateMachine stateMachine = StateMachine.create(bookstore1);
+
+        // Checkpoint should not throw any exceptions
+        stateMachine.checkpoint();
+    }
+
+    @Test
+    public void testStateMachineGetStateStream() {
+        Bookstore bookstore1 = new Bookstore(1);
+        Bookstore bookstore2 = new Bookstore(2);
+
+        StateMachine stateMachine = StateMachine.create(bookstore1, bookstore2);
+
+        List<Bookstore> stateMachineBookstores = stateMachine.getStateStream().collect(Collectors.toList());
+        assertEquals("State stream should contain 2 bookstores", 2, stateMachineBookstores.size());
+        assertTrue("State stream should contain bookstore1", stateMachineBookstores.contains(bookstore1));
+        assertTrue("State stream should contain bookstore2", stateMachineBookstores.contains(bookstore2));
     }
 }
