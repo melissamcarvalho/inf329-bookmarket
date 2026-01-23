@@ -402,7 +402,7 @@ public class Bookmarket {
 
         Map<Book, Set<Stock>> result = new HashMap<>();
 
-        List<Book> recommendation = getRecommendationByUsers(c_id).stream()
+        List<Book> recommendation = getRecommendationByUsers(c_id, count).stream()
                 .limit(5)
                 .sorted(Comparator.comparingInt(Book::getId))
                 .collect(Collectors.toList());

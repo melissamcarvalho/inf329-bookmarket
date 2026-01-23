@@ -364,7 +364,7 @@ public class BookmarketTest {
 
     @Test
     public void testStocksRecommendationByUsers() {
-        Map<Book, Set<Stock>> recommendations = Bookmarket.getStocksRecommendationByUsers(79);
+        Map<Book, Set<Stock>> recommendations = Bookmarket.getStocksRecommendationByUsers(79, 10);
         assertNotNull("Recommendations map should not be null", recommendations);
         assertEquals("Recommendations map should have the expected amount of Books for Customer(id=79)",
                 5, recommendations.size());
