@@ -3,6 +3,7 @@ package recommendation;
 import dominio.Customer;
 import dominio.Evaluation;
 import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray;
+import recommendation.mahout.ItemBasedMahoutRecommender;
 import recommendation.mahout.MahoutEvaluation;
 import recommendation.mahout.UserBasedMahoutRecommender;
 
@@ -18,7 +19,7 @@ public class RecommendationEngine {
     private List<MahoutEvaluation> mahoutEvaluations;
 
     private final UserBasedMahoutRecommender userBasedMahoutRecommender;
-    // private final BaseMahoutRecommender itemBasedMahoutRecommender;
+    private final ItemBasedMahoutRecommender itemBasedMahoutRecommender;
     
     /**
      * Acts as an Adapter for Evaluation to the DataModel Mahout expects as input.
@@ -31,7 +32,7 @@ public class RecommendationEngine {
         DataModel mahoutDataModel = buildMahoutDataModel();
 
         userBasedMahoutRecommender = new UserBasedMahoutRecommender(settings, mahoutDataModel);
-        // itemBasedMahoutRecommender = new ItemBasedMahoutRecommender(settings, mahoutDataModel);
+        itemBasedMahoutRecommender = new ItemBasedMahoutRecommender(settings, mahoutDataModel);
     }
 
     /**
@@ -41,7 +42,7 @@ public class RecommendationEngine {
      */
     public void setSettings(final RecommendationSettings settings) {
         userBasedMahoutRecommender.setSettings(settings);
-        // itemBasedMahoutRecommender.setSettings(settings);
+        itemBasedMahoutRecommender.setSettings(settings);
     }
 
     /**
@@ -55,7 +56,7 @@ public class RecommendationEngine {
         DataModel mahoutDataModel = buildMahoutDataModel();
 
         this.userBasedMahoutRecommender.refresh(mahoutDataModel);
-        // this.itemBasedMahoutRecommender.refresh(mahoutDataModel);
+        this.itemBasedMahoutRecommender.refresh(mahoutDataModel);
     }
 
     private List<MahoutEvaluation> buildMahoutEvaluations(List<Evaluation> evaluations) {
@@ -81,20 +82,21 @@ public class RecommendationEngine {
     /**
      * Recommend by Items
      * @param customer_id Customer ID
-     * @return List of Book IDs
+     * @param count Number of recommendations to return
+     * @return List of Book IDs (empty list if no recommendations available)
      */
-    public List<Integer> recommendByItems(int customer_id) {
-        // TODO
-        return null;
+    public List<Integer> recommendByItems(int customer_id, int count) {
+        List<Integer> recommendations = this.itemBasedMahoutRecommender.recommend(customer_id, count);
+        return recommendations;
     }
 
     /**
      * Recommend by Users
      * @param customer_id Customer ID
-     * @return List of Book IDs
+     * @param count Number of recommendations to return
+     * @return List of Book IDs (empty list if no recommendations available)
      */
     public List<Integer> recommendByUsers(int customer_id, int count) {
-        List<Integer> recommendations = this.userBasedMahoutRecommender.recommend(customer_id, count);
-        return recommendations;
+        return this.userBasedMahoutRecommender.recommend(customer_id, count);
     }
 }

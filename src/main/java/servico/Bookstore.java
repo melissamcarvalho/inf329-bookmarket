@@ -333,17 +333,30 @@ public class Bookstore implements Serializable {
 
     /**
      * Returns a list of recommended books based on items.
+     * 
+     * @param c_id Customer ID
+     * @param count Number of recommendations to return
+     * @return List of recommended books (empty list if no recommendations available)
      */
-    public static List<Book> getRecommendationByItens(int c_id) {
-        // to do
-        return null;
+    public static List<Book> getRecommendationByItens(int c_id, int count) {
+        List<Integer> recommended = recommendationEngine.recommendByItems(c_id, count);
+
+        return recommended.stream()
+            .map(Bookstore::getBook)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
     }
 
     /**
      * Returns a list of recommended books based on users.
+     * 
+     * @param customerId Customer ID
+     * @param count Number of recommendations to return
+     * @return List of recommended books (empty list if no recommendations available)
      */
-    public static List<Book> getRecommendationByUsers(int customerId) {
-        List<Integer> recommended = recommendationEngine.recommendByUsers(customerId, 10);
+    public static List<Book> getRecommendationByUsers(int customerId, int count) {
+        List<Integer> recommended = recommendationEngine.recommendByUsers(customerId, count);
 
         return recommended.stream()
             .map(Bookstore::getBook)

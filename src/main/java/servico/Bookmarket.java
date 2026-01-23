@@ -366,23 +366,27 @@ public class Bookmarket {
     }
 
     /**
-     *
      * @param c_id
-     * @return
+     * @param count
+     * @return List of recommended books (never null, returns empty list if no recommendations available)
      */
-    public static List<Book> getRecommendationByItens(int c_id) {
+    public static List<Book> getRecommendationByItens(int c_id, int count) {
         Validator.notNegative(c_id, "Customer ID");
-        return Bookstore.getRecommendationByItens(c_id);
+        List<Book> recommendations = Bookstore.getRecommendationByItens(c_id, count);
+        return recommendations != null ? recommendations : new ArrayList<>();
     }
 
     /**
-     *
-     * @param c_id
-     * @return
+     * Returns a list of recommended books based on users.
+     * 
+     * @param c_id Customer ID
+     * @param count Number of recommendations to return
+     * @return List of recommended books (never null, returns empty list if no recommendations available)
      */
-    public static List<Book> getRecommendationByUsers(int c_id) {
+    public static List<Book> getRecommendationByUsers(int c_id, int count) {
         Validator.notNegative(c_id, "Customer ID");
-        return Bookstore.getRecommendationByUsers(c_id);
+        List<Book> recommendations = Bookstore.getRecommendationByUsers(c_id, count);
+        return recommendations != null ? recommendations : new ArrayList<>();
     }
 
     /**
@@ -390,9 +394,10 @@ public class Bookmarket {
      * estoques (Stock) ordenados de forma crescente pelo preço do livro.
      *
      * @param c_id
+     * @param count Number of recommendations to return
      * @return
      */
-    public static Map<Book, Set<Stock>> getStocksRecommendationByUsers(int c_id) {
+    public static Map<Book, Set<Stock>> getStocksRecommendationByUsers(int c_id, int count) {
         Validator.notNegative(c_id, "Customer ID");
 
         Map<Book, Set<Stock>> result = new HashMap<>();

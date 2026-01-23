@@ -5,16 +5,9 @@ import java.util.*;
 import dominio.*;
 import org.junit.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import recommendation.RecommendationSettings;
 import util.TPCW_Util;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import static org.junit.Assert.*;
 
 /**
@@ -353,17 +346,16 @@ public class BookmarketTest {
 
     @Test
     public void testRecommendationByItens() {
-        System.out.println("TODO: Bookmarket.getRecommendationByItens");
-//        List<Book> recommendations = Bookmarket.getRecommendationByItens(79);
-//        assertNotNull("Recommendation list should not be null", recommendations);
-//        assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
-//        assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
-//                9, recommendations.size());
+        List<Book> recommendations = Bookmarket.getRecommendationByItens(79, 10);
+        assertNotNull("Recommendation list should not be null", recommendations);
+        assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
+        assertTrue("Recommendation list should have at least 1 Book for Customer(id=79)",
+                recommendations.size() >= 1);
     }
 
     @Test
     public void testRecommendationByUsers() {
-        List<Book> recommendations = Bookmarket.getRecommendationByUsers(79);
+        List<Book> recommendations = Bookmarket.getRecommendationByUsers(79, 10);
         assertNotNull("Recommendation list should not be null", recommendations);
         assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
         assertEquals("Recommendation list should have the expected amount of Books for Customer(id=79)",
@@ -399,8 +391,37 @@ public class BookmarketTest {
     }
 
     @Test
+    public void testGetRecommendationByUsersReturnsEmptyListWhenNoRecommendations() {
+        // Create a new customer with no order history
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2000, Calendar.JANUARY, 1, 0, 0, 0);
+        Date birthdate = calendar.getTime();
+
+        Customer newCustomer = Bookmarket.createNewCustomer(
+                "Test", "NoOrders", "Street", "Street2", "City",
+                "State", "12345", "Country", "123456789", "test@test.com",
+                birthdate, "Data");
+
+        List<Book> recommendations = Bookmarket.getRecommendationByUsers(newCustomer.getId(), 10);
+
+        assertNotNull("Recommendation list should not be null", recommendations);
+        assertTrue("Recommendation list should be empty for customer with no order history",
+               recommendations.isEmpty());
+    }
+
+    @Test
     public void testPriceBookRecommendationByUsers() {
         // TODO
         System.out.println("TODO: testPriceBookRecommendationByUsers");
+    }
+
+    @Test
+    public void testGetRecommendationByUsersWithNonExistentCustomer() {
+        // Test with a customer ID that doesn't exist
+        List<Book> recommendations = Bookmarket.getRecommendationByUsers(999999, 10);
+
+        assertNotNull("Recommendation list should never be null", recommendations);
+        assertTrue("Recommendation list should be empty for non-existent customer",
+               recommendations.isEmpty());
     }
 }

@@ -1,5 +1,6 @@
 package recommendation;
 
 public enum RecommendationUserSimilarity {
-    nearestUserNeighborhood
+    nearestUserNeighborhood,
+    thresholdUserNeighborhood
 }
