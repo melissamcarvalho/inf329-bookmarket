@@ -89,18 +89,18 @@ public class ItemBasedMahoutRecommender extends BaseMahoutRecommender {
     }
 
     /**
-     * Generate recommendations for a customer
+     * Generate recommendations based on Item
      * 
-     * @param customerId Customer ID
+     * @param itemId Item ID
      * @param count      Count of recommendations to be returned
      * @return List of recommended Books
      * @throws MahoutRecommenderException if recommendation fails or user/item data
      *                                    is inconsistent
      */
     @Override
-    public List<Integer> recommend(int customerId, int count) {
+    public List<Integer> recommend(int itemId, int count) {
         // Validate input parameters
-        validateRecommendationParameters(customerId, count);
+        validateRecommendationParameters(itemId, count);
 
         if (mahoutItemRecommender == null) {
             throw new MahoutRecommenderException("Item-based recommender is not initialized. " +
@@ -109,11 +109,11 @@ public class ItemBasedMahoutRecommender extends BaseMahoutRecommender {
 
         List<RecommendedItem> recommendations = null;
         try {
-            recommendations = mahoutItemRecommender.recommend(customerId, count);
+            recommendations = mahoutItemRecommender.recommend(itemId, count);
         } catch (org.apache.mahout.cf.taste.common.NoSuchUserException e) {
-            throw new MahoutRecommenderException("User with ID " + customerId + " not found in DataModel", e);
+            throw new MahoutRecommenderException("User with ID " + itemId + " not found in DataModel", e);
         } catch (org.apache.mahout.cf.taste.common.TasteException e) {
-            throw new MahoutRecommenderException("Error generating recommendations for user " + customerId + ". " +
+            throw new MahoutRecommenderException("Error generating recommendations for user " + itemId + ". " +
                     "This may be due to insufficient data or inconsistencies in the DataModel.", e);
         } catch (Exception e) {
             throw new MahoutRecommenderException("Unexpected error during recommendation generation", e);

@@ -7,7 +7,7 @@ public class RecommendationSettings {
     private final double threshold;
 
     public RecommendationSettings() {
-        this(RecommendationCorrelationSimilarity.pearson, RecommendationUserSimilarity.nearestUserNeighborhood, 2);
+        this(RecommendationCorrelationSimilarity.pearson, RecommendationUserSimilarity.nearestUserNeighborhood, 10);
     }
 
     public RecommendationSettings(RecommendationCorrelationSimilarity correlationSimilarity,
