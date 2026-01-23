@@ -368,11 +368,12 @@ public class Bookmarket {
     /**
      *
      * @param c_id
+     * @param count
      * @return
      */
-    public static List<Book> getRecommendationByItens(int c_id) {
+    public static List<Book> getRecommendationByItens(int c_id, int count) {
         Validator.notNegative(c_id, "Customer ID");
-        return Bookstore.getRecommendationByItens(c_id);
+        return Bookstore.getRecommendationByItens(c_id, count);
     }
 
     /**

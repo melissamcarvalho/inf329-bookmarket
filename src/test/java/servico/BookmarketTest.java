@@ -353,12 +353,11 @@ public class BookmarketTest {
 
     @Test
     public void testRecommendationByItens() {
-        System.out.println("TODO: Bookmarket.getRecommendationByItens");
-//        List<Book> recommendations = Bookmarket.getRecommendationByItens(79);
-//        assertNotNull("Recommendation list should not be null", recommendations);
-//        assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
-//        assertEquals("Recommendation list should have exact 10 Books for Customer(id=79)",
-//                9, recommendations.size());
+        List<Book> recommendations = Bookmarket.getRecommendationByItens(79, 10);
+        assertNotNull("Recommendation list should not be null", recommendations);
+        assertFalse("Recommendation list should not be empty", recommendations.isEmpty());
+        assertTrue("Recommendation list should have at least 1 Book for Customer(id=79)",
+                recommendations.size() >= 1);
     }
 
     @Test
