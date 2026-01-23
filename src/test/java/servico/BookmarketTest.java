@@ -364,8 +364,30 @@ public class BookmarketTest {
 
     @Test
     public void testStocksRecommendationByUsers() {
-        // TODO
-        System.out.println("TODO: testStocksRecommendationByUsers");
+        Map<Book, Set<Stock>> recommendations = Bookmarket.getStocksRecommendationByUsers(79, 10);
+        assertNotNull("Recommendations map should not be null", recommendations);
+        assertEquals("Recommendations map should have the expected amount of Books for Customer(id=79)",
+                5, recommendations.size());
+
+        Book firstBook = recommendations.keySet().iterator().next();
+        List<Stock> firstBookStocks = Bookmarket.getStocks(firstBook.getId());
+
+        boolean firstResult = recommendations.get(firstBook).stream()
+                            .sorted(Comparator.comparingInt(Stock::getIdBookstore))
+                            .map(stock -> stock.equals(firstBookStocks.iterator().next()))
+                            .allMatch(pred -> pred.equals(true));
+
+        assertTrue("First book stocks should be equal", firstResult);
+
+        Book secondBook = recommendations.keySet().iterator().next();
+        List<Stock> secondBookStocks = Bookmarket.getStocks(firstBook.getId());
+
+        boolean secondResult = recommendations.get(firstBook).stream()
+                .sorted(Comparator.comparingInt(Stock::getIdBookstore))
+                .map(stock -> stock.equals(secondBookStocks.iterator().next()))
+                .allMatch(pred -> pred.equals(true));
+
+        assertTrue("Second book stocks should be equal", secondResult);
     }
 
     @Test
