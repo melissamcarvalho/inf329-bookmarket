@@ -262,7 +262,7 @@ public class BookstoreTest {
 
     @Test
     public void customerRecommendation() {
-        List<Book> recommendations = Bookstore.getRecommendationByUsers(79);
+        List<Book> recommendations = Bookstore.getRecommendationByUsers(79, 10);
         assertEquals(2, recommendations.size());
     }
 
@@ -289,7 +289,7 @@ public class BookstoreTest {
 
         Map<Customer, List<Book>> recommendedBooks = new HashMap<>();
         buyers.forEach(buyer -> {
-            List<Book> recommendations = Bookstore.getRecommendationByUsers(buyer.getId());
+            List<Book> recommendations = Bookstore.getRecommendationByUsers(buyer.getId(), 10);
             recommendedBooks.put(buyer, recommendations);
         });
 
