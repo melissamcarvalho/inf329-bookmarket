@@ -166,7 +166,7 @@ public class UserBasedMahoutRecommenderTest {
         RecommendationSettings defaultSettings = new RecommendationSettings();
         recommender.setSettings(defaultSettings);
 
-        assertEquals("Default neighborhood size should be 2", 2, recommender.getMahoutNeighborhoodSize());
+        assertEquals("Default neighborhood size should be 10", 10, recommender.getMahoutNeighborhoodSize());
         RecommendationSettings settings = new RecommendationSettings(RecommendationCorrelationSimilarity.euclideanDistance, RecommendationUserSimilarity.nearestUserNeighborhood, 5);
         recommender.setSettings(settings);
 

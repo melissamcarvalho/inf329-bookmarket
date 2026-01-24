@@ -26,7 +26,7 @@ public class RecommendationSettingsTest {
         assertNotNull(settings);
         assertEquals(RecommendationCorrelationSimilarity.pearson, settings.getCorrelationSimilarity());
         assertEquals(RecommendationUserSimilarity.nearestUserNeighborhood, settings.getUserSimilarity());
-        assertEquals(2, settings.getNeighborhoodSize());
+        assertEquals(10, settings.getNeighborhoodSize());
     }
 
     @Test(expected = IllegalArgumentException.class)
