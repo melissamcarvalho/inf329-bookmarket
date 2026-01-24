@@ -438,8 +438,38 @@ public class BookmarketTest {
 
     @Test
     public void testPriceBookRecommendationByUsers() {
-        // TODO
-        System.out.println("TODO: testPriceBookRecommendationByUsers");
+        Map<Book, Set<Stock>> recommendations = Bookmarket.getStocksRecommendationByUsers(79, 10);
+        assertNotNull("Recommendations map should not be null", recommendations);
+        
+        if (!recommendations.isEmpty()) {
+            // Verify that each book has associated stocks with valid prices
+            for (Map.Entry<Book, Set<Stock>> entry : recommendations.entrySet()) {
+                Book book = entry.getKey();
+                Set<Stock> stocks = entry.getValue();
+                
+                assertNotNull("Book should not be null", book);
+                assertNotNull("Stocks set should not be null", stocks);
+                
+                // Only verify stocks if they exist
+                if (!stocks.isEmpty()) {
+                    // Verify each stock has a valid cost/price
+                    for (Stock stock : stocks) {
+                        assertTrue("Stock cost should be non-negative", stock.getCost() >= 0);
+                        assertEquals("Stock book ID should match", book.getId(), stock.getBook().getId());
+                    }
+                    
+                    // Verify stocks are sorted by cost (ascending order)
+                    List<Double> costs = stocks.stream()
+                        .map(Stock::getCost)
+                        .collect(Collectors.toList());
+                    
+                    for (int i = 1; i < costs.size(); i++) {
+                        assertTrue("Stocks should be sorted by cost in ascending order",
+                            costs.get(i) >= costs.get(i - 1));
+                    }
+                }
+            }
+        }
     }
 
     @Test
